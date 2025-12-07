@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Khu Chung Cư Bluemoon - Login</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+        }
+
+        .center-box {
+            width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        button {
+            width: 80%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #3b7ddd;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #2d63b8;
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #aaa;
+        }
+
+        .back-btn {
+            background: #777;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ================= WELCOME SCREEN ================ -->
+<div id="welcome" class="center-box">
+    <h1>Chào mừng đến Bluemoon</h1>
+    <p>Vui lòng chọn loại tài khoản để đăng nhập.</p>
+
+    <button onclick="showUserLogin()">Đăng nhập Người dân</button>
+    <button onclick="showManagerLogin()">Đăng nhập Ban quản lý</button>
+</div>
+
+<!-- ================= USER LOGIN ================ -->
+<div id="userLogin" class="center-box hidden">
+    <h1>Đăng nhập Người dân</h1>
+
+    <input id="userEmail" type="email" placeholder="Email">
+    <input id="userPass" type="password" placeholder="Mật khẩu">
+
+    <button onclick="userLoginSubmit()">Đăng nhập</button>
+    <button class="back-btn" onclick="backToWelcome()">Quay lại</button>
+</div>
+
+<!-- ================= MANAGER LOGIN ================ -->
+<div id="managerLogin" class="center-box hidden">
+    <h1>Đăng nhập Ban quản lý</h1>
+
+    <input id="managerUser" type="text" placeholder="Tên đăng nhập">
+    <input id="managerPass" type="password" placeholder="Mật khẩu">
+
+    <button onclick="managerLoginSubmit()">Đăng nhập</button>
+    <button class="back-btn" onclick="backToWelcome()">Quay lại</button>
+</div>
+
+<script>
+    function showUserLogin() {
+        document.getElementById("welcome").classList.add("hidden");
+        document.getElementById("userLogin").classList.remove("hidden");
+    }
+
+    function showManagerLogin() {
+        document.getElementById("welcome").classList.add("hidden");
+        document.getElementById("managerLogin").classList.remove("hidden");
+    }
+
+    function backToWelcome() {
+        document.getElementById("userLogin").classList.add("hidden");
+        document.getElementById("managerLogin").classList.add("hidden");
+        document.getElementById("welcome").classList.remove("hidden");
+    }
+
+    function userLoginSubmit() {
+        const email = document.getElementById("userEmail").value;
+        const pass = document.getElementById("userPass").value;
+
+        alert("Người dân đăng nhập:\nEmail: " + email + "\nMật khẩu: " + pass);
+        // TODO: Gửi API đăng nhập người dùng
+    }
+
+    function managerLoginSubmit() {
+        const user = document.getElementById("managerUser").value;
+        const pass = document.getElementById("managerPass").value;
+
+        alert("Ban quản lý đăng nhập:\nUser: " + user + "\nMật khẩu: " + pass);
+        // TODO: Gửi API đăng nhập ban quản lý
+    }
+</script>
+
+</body>
+</html>

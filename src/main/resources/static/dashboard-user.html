@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>User Dashboard - Cư dân</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f2f4f7;
+        }
+
+        .sidebar {
+            position: fixed;
+            width: 250px;
+            height: 100vh;
+            background: #1f2a44;
+            color: white;
+            padding-top: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid #162033;
+            cursor: pointer;
+        }
+
+        .sidebar a:hover {
+            background: #253456;
+        }
+
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 0 5px #ccc;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border: none;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>CƯ DÂN</h2>
+    <a onclick="show('profile')">👤 Thông tin cá nhân</a>
+    <a onclick="show('apartment')">🏠 Thông tin căn hộ</a>
+    <a onclick="show('fees')">💰 Các khoản phí cần đóng</a>
+    <a onclick="show('history')">📜 Lịch sử thanh toán</a>
+    <a onclick="show('notifications')">🔔 Thông báo</a>
+    <a onclick="show('support')">📩 Yêu cầu hỗ trợ</a>
+    <a onclick="show('report')">📑 Báo cáo tháng</a>
+</div>
+
+<div class="content">
+
+    <!-- Thông tin cá nhân -->
+    <div id="profile" class="section active">
+        <div class="card">
+            <h2>Thông tin cá nhân</h2>
+            <p><b>Họ tên:</b> Nguyễn Văn A</p>
+            <p><b>Số điện thoại:</b> 0123456789</p>
+            <p><b>Email:</b> example@gmail.com</p>
+            <p><b>Ngày đăng ký:</b> 01/01/2024</p>
+        </div>
+    </div>
+
+    <!-- Thông tin căn hộ -->
+    <div id="apartment" class="section">
+        <div class="card">
+            <h2>Thông tin căn hộ</h2>
+            <p><b>Số căn hộ:</b> A101</p>
+            <p><b>Diện tích:</b> 75 m²</p>
+            <p><b>Số người sống:</b> 3</p>
+            <p><b>Loại căn hộ:</b> 2 phòng ngủ</p>
+        </div>
+    </div>
+
+    <!-- Phí cần đóng -->
+    <div id="fees" class="section">
+        <h2>Các khoản phí cần đóng</h2>
+        <table>
+            <tr>
+                <th>Tháng</th>
+                <th>Khoản phí</th>
+                <th>Số tiền</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+
+            <tr>
+                <td>01/2025</td>
+                <td>Phí quản lý</td>
+                <td>350.000đ</td>
+                <td style="color: red;">Chưa đóng</td>
+                <td><button class="btn">Thanh toán</button></td>
+            </tr>
+
+            <tr>
+                <td>01/2025</td>
+                <td>Phí gửi xe</td>
+                <td>120.000đ</td>
+                <td style="color: green;">Đã đóng</td>
+                <td><button class="btn" disabled>✓</button></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Lịch sử thanh toán -->
+    <div id="history" class="section">
+        <h2>Lịch sử thanh toán</h2>
+        <table>
+            <tr>
+                <th>Ngày</th>
+                <th>Khoản phí</th>
+                <th>Số tiền</th>
+                <th>Phương thức</th>
+            </tr>
+
+            <tr>
+                <td>05/12/2024</td>
+                <td>Phí quản lý</td>
+                <td>350.000đ</td>
+                <td>Chuyển khoản</td>
+            </tr>
+
+            <tr>
+                <td>05/12/2024</td>
+                <td>Phí gửi xe</td>
+                <td>120.000đ</td>
+                <td>Ví điện tử</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Thông báo -->
+    <div id="notifications" class="section">
+        <div class="card">
+            <h2>Thông báo</h2>
+            <ul>
+                <li>🌧 Hệ thống nước nóng bảo trì ngày 12/12</li>
+                <li>🚗 Cấm đỗ xe ở khu vực B02 trong tuần này</li>
+                <li>🔧 Tòa nhà sẽ kiểm tra điện ngày 15/12</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Yêu cầu hỗ trợ -->
+    <div id="support" class="section">
+        <div class="card">
+            <h2>Gửi yêu cầu hỗ trợ</h2>
+            <textarea id="supportText" rows="5" style="width: 100%; padding: 10px;"></textarea>
+            <br><br>
+            <button class="btn" onclick="sendSupport()">Gửi yêu cầu</button>
+        </div>
+    </div>
+
+    <!-- Báo cáo tháng -->
+    <div id="report" class="section">
+        <div class="card">
+            <h2>Báo cáo tháng</h2>
+            <p>Các khoản phí đã đóng và còn nợ theo từng tháng.</p>
+            <button class="btn">Tải báo cáo PDF</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function show(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+function sendSupport() {
+    const text = document.getElementById("supportText").value;
+    if (text.trim().length === 0) {
+        alert("Vui lòng nhập nội dung!");
+        return;
+    }
+    alert("Yêu cầu hỗ trợ đã được gửi!");
+    document.getElementById("supportText").value = "";
+}
+</script>
+
+</body>
+</html>

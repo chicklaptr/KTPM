@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Chung cư Bluemoon</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f5f7;
+        }
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #2c3e50;
+            color: white;
+            position: fixed;
+            padding-top: 20px;
+        }
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .sidebar a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid #1a252f;
+        }
+        .sidebar a:hover {
+            background: #34495e;
+        }
+        .content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+        .section {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+        }
+        th {
+            background: #3498db;
+            color: white;
+        }
+        .btn {
+            padding: 7px 14px;
+            border: none;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+        .btn-danger {
+            background: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>QUẢN LÝ CHUNG CƯ</h2>
+
+    <a onclick="show('households')">🏠 Xem tất cả hộ dân</a>
+    <a onclick="show('cost-stats')">📊 Thống kê chi phí</a>
+    <a onclick="show('billing')">🧾 Quản lý hóa đơn tháng</a>
+    <a onclick="show('accounts')">👥 Quản lý tài khoản cư dân</a>
+    <a onclick="show('reports')">📑 Xem báo cáo</a>
+</div>
+
+<div class="content">
+
+    <!-- Hộ dân -->
+    <div id="households" class="section active">
+        <h2>Danh sách hộ dân</h2>
+        <button class="btn">+ Thêm hộ dân</button>
+        <br><br>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Chủ hộ</th>
+                <th>Căn hộ</th>
+                <th>Số điện thoại</th>
+                <th>Hành động</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>Nguyễn Văn A</td>
+                <td>A101</td>
+                <td>0123456789</td>
+                <td>
+                    <button class="btn">Sửa</button>
+                    <button class="btn btn-danger">Xoá</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Thống kê -->
+    <div id="cost-stats" class="section">
+        <h2>Thống kê chi phí toàn bộ tòa nhà</h2>
+        <p>Biểu đồ hoặc bảng thống kê sẽ đặt ở đây.</p>
+    </div>
+
+    <!-- Hóa đơn -->
+    <div id="billing" class="section">
+        <h2>Quản lý hóa đơn tháng</h2>
+        <p>Danh sách hóa đơn, lọc theo tháng, năm…</p>
+    </div>
+
+    <!-- Tài khoản -->
+    <div id="accounts" class="section">
+        <h2>Quản lý tài khoản cư dân</h2>
+        <p>Thêm / sửa / xoá tài khoản cư dân.</p>
+    </div>
+
+    <!-- Báo cáo -->
+    <div id="reports" class="section">
+        <h2>Xem báo cáo</h2>
+        <p>Xuất PDF, Excel…</p>
+    </div>
+
+</div>
+
+<script>
+function show(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+</script>
+
+</body>
+</html>
