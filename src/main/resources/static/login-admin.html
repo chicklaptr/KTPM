@@ -57,6 +57,7 @@
 <body>
 <div class="login-box">
     <h2>Đăng nhập ban quản lý</h2>
+<div id="error-msg" style="color:red; text-align:center; margin-bottom:10px;"></div>
 
     <form action="/api/auth/admin-login" method="POST">
 
@@ -74,4 +75,18 @@
     </form>
 </div>
 </body>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("error");
+
+    const msgDiv = document.getElementById("error-msg");
+
+    if (error === "password") {
+        msgDiv.innerText = "❌ Mật khẩu không đúng";
+    } else if (error === "notfound") {
+        msgDiv.innerText = "❌ Tài khoản không tồn tại";
+    } else if (error === "role") {
+        msgDiv.innerText = "❌ Bạn không có quyền truy cập";
+    }
+</script>
 </html>
