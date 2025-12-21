@@ -1,7 +1,7 @@
 package com.bluemoon.bluemoon.entity;
 
 import jakarta.persistence.*;
-
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,28 +14,35 @@ public class HouseholdFee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "household_id", nullable = false)
     private Household household;
-
+    
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fee_category_id", nullable = false)
     private FeeCategory feeCategory;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "billing_period_id", nullable = false)
     private BillingPeriod billingPeriod;
 
+    @DecimalMin(value="0.0",inclusive = true)
     @Column(name = "quantity", precision = 15, scale = 2)
     private BigDecimal quantity;
 
+    @DecimalMin(value="0.0",inclusive = true)
     @Column(name = "unit_price", precision = 15, scale = 2)
     private BigDecimal unitPrice;
 
+    @DecimalMin(value="0.0",inclusive = true)
     @Column(name = "amount", precision = 15, scale = 2)
     private BigDecimal amount;
 
+    @NotBlank @Size(max=20)
     @Column(name = "status", length = 20)
     private String status = "PENDING";
 

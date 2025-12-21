@@ -1,6 +1,7 @@
 package com.bluemoon.bluemoon.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 
 
 import  java.time.LocalDate;
@@ -13,19 +14,25 @@ public class BillingPeriod {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    
+    
+    @NotNull @Min(2000) @Max(2100)
     @Column(name = "year", nullable = false)
     private Integer year;
-
+    
+    @NotNull @Min(1) @Max(12)
     @Column(name = "month", nullable = false)
     private Integer month;
-
+    
+    @NotNull 
     @Column(name = "start_date")
     private LocalDate startDate;
-
+    
+    @NotNull	
     @Column(name = "end_date")
     private LocalDate endDate;
-
+    
+    @NotNull	
     @Column(name = "closed")
     private Boolean closed = false;
 

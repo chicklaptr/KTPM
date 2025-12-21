@@ -2,7 +2,7 @@ package com.bluemoon.bluemoon.entity;
 
 import jakarta.persistence.*;
 
-
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -15,27 +15,35 @@ public class Resident {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull @Size(max=100)
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
+    
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
+    @Size(max=10)
     @Column(name = "gender", length = 10)
     private String gender;
 
+    @Size(max=50)
     @Column(name = "id_number", length = 50)
     private String idNumber;
 
+    @Size(max=20)
     @Column(name = "phone", length = 20)
     private String phone;
 
+    @Size(max=50)
     @Column(name = "relation_to_head", length = 50)
     private String relationToHead;
 
+    @Size(max=50)
     @Column(name = "residence_status", length = 50)
     private String residenceStatus;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "household_id", nullable = false)
     private Household household;

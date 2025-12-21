@@ -1,5 +1,5 @@
 package com.bluemoon.bluemoon.entity;
-
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 import jakarta.persistence.*;
@@ -16,24 +16,32 @@ public class FeeCategory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank @Size(max = 50)
     @Column(nullable = false, unique = true, length = 50)
     private String code;
-
+    
+    
+    @NotBlank @Size(max = 100)
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Size(max = 255)
     @Column(length = 255)
     private String description;
-
+    
+    @Size(max = 50)
     @Column(name = "unit", length = 50)
     private String unit;
 
+    @DecimalMin(value="0.0",inclusive = true)
     @Column(name = "default_amount", precision = 15, scale = 2)
     private BigDecimal defaultAmount;
 
+    @NotNull
     @Column(name = "fixed_monthly")
     private Boolean fixedMonthly = true;
 
+    @NotNull
     @Column(name = "active")
     private Boolean active = true;
 

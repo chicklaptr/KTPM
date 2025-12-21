@@ -1,7 +1,7 @@
 package com.bluemoon.bluemoon.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-
+import jakarta.validation.constraints.*;
 import jakarta.persistence.Entity;
 
 @Entity
@@ -10,17 +10,28 @@ public class Account {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	
+	@NotBlank @Size(max=50)
 	@Column(name = "username", nullable = false, length = 50, unique = true)
 	private String username;
+	
+	@NotBlank @Size(min=6,max=100)
 	@Column(name = "password", nullable = false, length = 100)
 	private String password;
+	
+	@NotNull
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "role_id", nullable = false)
 	private Role role;
+	
+	
 	@Column(name = "created_at")
 	private LocalDateTime createdAt = LocalDateTime.now();
+	
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
+    
+    
     @OneToOne
     @JoinColumn(name = "resident_id")
     private Resident resident;
