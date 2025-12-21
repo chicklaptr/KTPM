@@ -1,17 +1,166 @@
 // Xử lý đăng nhập cư dân
+/* ==================================================
+   LOGIN USER (CƯ DÂN)
+================================================== */
 function loginUser(event) {
     event.preventDefault();
 
     const email = document.getElementById("userEmail").value;
-    const pass = document.getElementById("userPassword").value;
+    const password = document.getElementById("userPassword").value;
 
-    // gọi API thật sau
-    if (email && pass) {
-        alert("Đăng nhập cư dân thành công!");
-        window.location.href = "user-dashboard.html"; // trang sau đăng nhập
+    fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    })
+        .then(res => {
+            if (!res.ok) throw new Error("Sai email hoặc mật khẩu");
+            return res.json();
+        })
+        .then(user => {
+            localStorage.setItem("user", JSON.stringify(user));
+            window.location.href = "dashboard-user.html";
+        })
+        .catch(err => alert(err.message));
+}
+
+/* ==================================================
+   AUTO LOAD DASHBOARD USER
+================================================== */
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById("profile")) {
+        loadUserInfo();
+        loadHouseholdInfo();
+        loadHouseholdFees();
+        loadPaymentHistory();
     }
+});
 
-    return false;
+/* ==================================================
+   USER INFO
+================================================== */
+function loadUserInfo() {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) return;
+
+    document.getElementById("u-name").innerText = user.fullName || "";
+    document.getElementById("u-phone").innerText = user.phone || "";
+    document.getElementById("u-email").innerText = user.email || "";
+}
+
+/* ==================================================
+   HOUSEHOLD INFO
+================================================== */
+function loadHouseholdInfo() {
+    fetch("/api/user/household")
+        .then(res => res.json())
+        .then(h => {
+            document.getElementById("h-code").innerText = h.code;
+            document.getElementById("h-area").innerText = h.area + " m²";
+            document.getElementById("h-members").innerText = h.memberCount;
+            document.getElementById("h-type").innerText = h.type;
+        });
+}
+
+/* ==================================================
+   HOUSEHOLD FEES
+================================================== */
+function loadHouseholdFees() {
+    fetch("/api/user/household-fees")
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById("feeTable");
+            tbody.innerHTML = "";
+
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center">
+                            Không có khoản phí nào
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            data.forEach(fee => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${fee.billingPeriod}</td>
+                        <td>${fee.feeCategory}</td>
+                        <td>${fee.amount.toLocaleString()}đ</td>
+                        <td style="color:${fee.paid ? 'green' : 'red'}">
+                            ${fee.paid ? "Đã đóng" : "Chưa đóng"}
+                        </td>
+                        <td>
+                            ${
+                                fee.paid
+                                    ? '<button class="btn" disabled>✓</button>'
+                                    : `<button class="btn" onclick="pay(${fee.id})">Thanh toán</button>`
+                            }
+                        </td>
+                    </tr>`;
+            });
+        });
+}
+
+/* ==================================================
+   PAYMENT HISTORY
+================================================== */
+function loadPaymentHistory() {
+    fetch("/api/user/payments")
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById("historyTable");
+            tbody.innerHTML = "";
+
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align:center">
+                            Chưa có lịch sử thanh toán
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            data.forEach(p => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.date}</td>
+                        <td>${p.feeCategory}</td>
+                        <td>${p.amount.toLocaleString()}đ</td>
+                        <td>${p.method}</td>
+                    </tr>`;
+            });
+        });
+}
+
+/* ==================================================
+   PAYMENT DEMO
+================================================== */
+function pay(id) {
+    alert("Demo thanh toán cho phí ID = " + id);
+}
+
+/* ==================================================
+   SUPPORT
+================================================== */
+function sendSupport() {
+    const text = document.getElementById("supportText").value;
+    if (text.trim().length === 0) {
+        alert("Vui lòng nhập nội dung!");
+        return;
+    }
+    alert("Yêu cầu hỗ trợ đã được gửi!");
+    document.getElementById("supportText").value = "";
+}
+
+/* ==================================================
+   UI SECTION SWITCH
+================================================== */
+function show(id) {
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
 }
 
 // Xử lý đăng nhập ban quản lý
