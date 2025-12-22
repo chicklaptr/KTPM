@@ -18,6 +18,19 @@ public class HouseholdFeeServiceImpl implements HouseholdFeeService {
     public HouseholdFeeServiceImpl(HouseholdFeeRepository householdFeeRepository) {
         this.householdFeeRepository = householdFeeRepository;
     }
+    @Override
+    public List<HouseholdFee> getByHouseholdId(Long householdId) {
+        List<HouseholdFee> fees = householdFeeRepository.findByHouseholdId(householdId);
+
+        if (fees.isEmpty()) {
+            throw new ResourceNotFoundException(
+                "No household fees found for household id " + householdId
+            );
+        }
+
+        return fees;
+    }
+
 
     @Override
     public HouseholdFee create(HouseholdFee fee) {
@@ -61,4 +74,5 @@ public class HouseholdFeeServiceImpl implements HouseholdFeeService {
     public List<HouseholdFee> getAll() {
         return householdFeeRepository.findAll();
     }
+    
 }

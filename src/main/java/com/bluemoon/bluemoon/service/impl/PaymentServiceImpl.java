@@ -27,6 +27,11 @@ public class PaymentServiceImpl implements PaymentService {
 	}
 
     @Override
+    public List<Payment> getByHouseholdId(Long householdId) {
+        return paymentRepository.findByHouseholdFee_Household_Id(householdId);
+    }
+
+    @Override
     public Payment create(Payment payment) {
 
         if (payment.getHouseholdFee() == null || payment.getHouseholdFee().getId() == null) {

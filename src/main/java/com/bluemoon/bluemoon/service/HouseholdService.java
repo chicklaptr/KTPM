@@ -2,6 +2,7 @@ package com.bluemoon.bluemoon.service;
 
 import com.bluemoon.bluemoon.entity.Household;
 
+
 import java.util.List;
 
 public interface HouseholdService {
@@ -14,6 +15,7 @@ public interface HouseholdService {
 
     Household getById(Long id);
 
+   
     List<Household> getAll();
 
     List<Household> getActive();

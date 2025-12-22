@@ -1,5 +1,5 @@
 package com.bluemoon.bluemoon.controller;
-
+import jakarta.servlet.http.HttpSession;
 import com.bluemoon.bluemoon.entity.Resident;
 import com.bluemoon.bluemoon.service.ResidentService;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,18 @@ public class ResidentController {
     public ResidentController(ResidentService residentService) {
         this.residentService = residentService;
     }
+    
+    @GetMapping("/me")
+    public ResponseEntity<Resident> getMe(HttpSession session) {
+        Long residentId = (Long) session.getAttribute("residentId");
 
+        if (residentId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        //System.out.println("Resident ID from session: " + residentId);
+        return ResponseEntity.ok(residentService.getById(residentId));
+    }
+    
     @PostMapping
     public ResponseEntity<Resident> create(@RequestBody Resident resident) {
         return ResponseEntity.ok(residentService.create(resident));

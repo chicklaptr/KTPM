@@ -1,7 +1,12 @@
 package com.bluemoon.bluemoon.controller;
 
 import com.bluemoon.bluemoon.entity.HouseholdFee;
+import com.bluemoon.bluemoon.entity.Resident;
 import com.bluemoon.bluemoon.service.HouseholdFeeService;
+import com.bluemoon.bluemoon.service.ResidentService;
+
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,11 +17,24 @@ import java.util.List;
 public class HouseholdFeeController {
 
     private final HouseholdFeeService householdFeeService;
-
-    public HouseholdFeeController(HouseholdFeeService householdFeeService) {
+    private final com.bluemoon.bluemoon.service.ResidentService residentService;
+    public HouseholdFeeController(HouseholdFeeService householdFeeService, ResidentService residentService) {
         this.householdFeeService = householdFeeService;
+        this.residentService = residentService;
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> myHouseholdFees(HttpSession session) {
+        Long residentId = (Long) session.getAttribute("residentId");
+        if (residentId == null) return ResponseEntity.status(401).body("Not logged in");
+
+        Resident r = residentService.getById(residentId);
+        Long householdId = r.getHousehold().getId(); 
+
+        
+        return ResponseEntity.ok(householdFeeService.getByHouseholdId(householdId));
+    }
+    
     @PostMapping
     public ResponseEntity<HouseholdFee> create(@RequestBody HouseholdFee fee) {
         return ResponseEntity.ok(householdFeeService.create(fee));

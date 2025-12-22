@@ -13,6 +13,7 @@ public interface HouseholdFeeService {
     void delete(Long id);
 
     HouseholdFee getById(Long id);
-
+    List<HouseholdFee> getByHouseholdId(Long householdId);
+                
     List<HouseholdFee> getAll();
 }
