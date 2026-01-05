@@ -525,8 +525,8 @@ function viewPeriodDetails(id) {
                             <td>${fee.household?.apartmentNumber || ''}</td>
                             <td>${fee.feeCategory?.name || ''}</td>
                             <td>${fee.quantity ? fee.quantity.toLocaleString() : ''}</td>
-                            <td>${fee.unitPrice ? fee.unitPrice.toLocaleString() + 'đ' : ''}</td>
-                            <td><strong>${amount.toLocaleString('vi-VN')}đ</strong></td>
+                            <td>${fee.unitPrice ? formatMoney(fee.unitPrice) : ''}</td>
+                            <td><strong>${formatMoney(amount)}</strong></td>
                             <td><span style="color:${statusColor}; font-weight:bold">${statusText}</span></td>
                             <td>${fee.dueDate ? new Date(fee.dueDate).toLocaleDateString('vi-VN') : ''}</td>
                         </tr>
@@ -1127,13 +1127,25 @@ function displayStatistics(categories, fees, period, households) {
     let totalHouseholds = households.length;
     
     fees.forEach(fee => {
-        const amount = fee.amount ? parseFloat(fee.amount) : 0;
-        grandTotal += amount;
+        const amount = toMoneyInteger(fee.amount || 0);
+        grandTotal = addMoney(grandTotal, amount);
         if (fee.status === 'PAID') {
             totalPaid++;
         } else {
             totalPending++;
         }
+    });
+    
+    // Lưu dữ liệu tổng tiền kỳ thu phí để thống kê
+    saveMoneyData(`period_${period.id}_total`, {
+        periodId: period.id,
+        periodMonth: period.month,
+        periodYear: period.year,
+        grandTotal: grandTotal,
+        totalPaid: totalPaid,
+        totalPending: totalPending,
+        totalHouseholds: totalHouseholds,
+        timestamp: new Date().toISOString()
     });
     
     // Store periodId for use in update functions
@@ -1174,13 +1186,13 @@ function displayStatistics(categories, fees, period, households) {
         let householdPaid = 0;
         let householdPending = 0;
         
-        // Calculate household totals
+        // Calculate household totals using money-utils (số nguyên)
         categories.forEach(cat => {
             const key = `${household.id}_${cat.id}`;
             const fee = feeMap[key];
             if (fee) {
-                const amount = fee.amount ? parseFloat(fee.amount) : 0;
-                householdTotal += amount;
+                const amount = toMoneyInteger(fee.amount || 0);
+                householdTotal = addMoney(householdTotal, amount);
                 if (fee.status === 'PAID') {
                     householdPaid++;
                 } else {
@@ -1200,7 +1212,7 @@ function displayStatistics(categories, fees, period, households) {
                     </div>
                     <div style="text-align: right;">
                         <div style="font-size: 20px; font-weight: bold; color: #e67e22;">
-                            ${householdTotal.toLocaleString('vi-VN')}đ
+                            ${formatMoney(householdTotal)}
                         </div>
                         <div style="font-size: 12px; color: #7f8c8d;">
                             ${householdPaid} đã trả / ${householdPending} chờ
@@ -1254,9 +1266,10 @@ function displayStatistics(categories, fees, period, households) {
                 };
             }
             
-            const amount = fee.amount ? parseFloat(fee.amount) : 0;
-            const quantity = fee.quantity ? parseFloat(fee.quantity) : '';
-            const unitPrice = fee.unitPrice ? parseFloat(fee.unitPrice) : (cat.defaultAmount || 0);
+            // Sử dụng money-utils để đảm bảo tính toán chính xác
+            const amount = toMoneyInteger(fee.amount || 0);
+            const quantity = fee.quantity !== null && fee.quantity !== undefined ? fee.quantity : '';
+            const unitPrice = fee.unitPrice !== null && fee.unitPrice !== undefined ? toMoneyInteger(fee.unitPrice) : toMoneyInteger(cat.defaultAmount || 0);
             const statusColor = fee.status === 'PAID' ? '#27ae60' : 
                               fee.status === 'PENDING' ? '#f39c12' : '#e74c3c';
             const statusText = fee.status === 'PAID' ? 'Đã trả' :
@@ -1291,7 +1304,7 @@ function displayStatistics(categories, fees, period, households) {
                                style="width: 120px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: right;">
                     </td>
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: right; font-weight: bold;" id="amount_${household.id}_${cat.id}">
-                        ${amount > 0 ? amount.toLocaleString('vi-VN') + 'đ' : '0đ'}
+                        ${formatMoney(amount)}
                     </td>
                     <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
                         <select onchange="updateFeeStatus(${fee.id || 'null'}, ${household.id}, ${cat.id}, ${period.id}, this.value)" 
@@ -1314,14 +1327,15 @@ function calculateAmount(householdId, categoryId) {
     
     if (!quantityInput || !unitPriceInput) return;
     
-    const quantity = parseFloat(quantityInput.value) || 0;
-    const unitPrice = parseFloat(unitPriceInput.value) || 0;
-    const amount = quantity * unitPrice;
+    // Sử dụng money-utils để tính toán chính xác
+    const quantity = quantityInput.value || 0;
+    const unitPrice = unitPriceInput.value || 0;
+    const amount = multiplyMoney(quantity, unitPrice); // Tính bằng số nguyên
     
-    // Update amount display immediately
+    // Update amount display immediately với format đầy đủ số không
     const amountCell = document.getElementById(`amount_${householdId}_${categoryId}`);
     if (amountCell) {
-        amountCell.textContent = amount > 0 ? amount.toLocaleString('vi-VN') + 'đ' : '0đ';
+        amountCell.textContent = formatMoney(amount);
     }
     
     // Update household total
@@ -1329,28 +1343,28 @@ function calculateAmount(householdId, categoryId) {
 }
 
 function updateFeeQuantity(feeId, householdId, categoryId, periodId, quantity) {
-    const qty = parseFloat(quantity) || 0;
+    const qty = toMoneyInteger(quantity);
     
     // Get unit price from input
     const unitPriceInput = document.querySelector(`input[data-household-id="${householdId}"][data-category-id="${categoryId}"][data-input-type="unitPrice"]`);
-    const unitPrice = unitPriceInput ? parseFloat(unitPriceInput.value) || 0 : 0;
+    const unitPrice = unitPriceInput ? toMoneyInteger(unitPriceInput.value) : 0;
     
-    // Calculate amount
-    const amount = qty * unitPrice;
+    // Calculate amount using money-utils (số nguyên)
+    const amount = multiplyMoney(qty, unitPrice);
     
     // Update or create fee
     updateFeeField(feeId, householdId, categoryId, periodId, 'quantity', qty, amount);
 }
 
 function updateFeeUnitPrice(feeId, householdId, categoryId, periodId, unitPrice) {
-    const price = parseFloat(unitPrice) || 0;
+    const price = toMoneyInteger(unitPrice);
     
     // Get quantity from input
     const quantityInput = document.querySelector(`input[data-household-id="${householdId}"][data-category-id="${categoryId}"][data-input-type="quantity"]`);
-    const quantity = quantityInput ? parseFloat(quantityInput.value) || 0 : 0;
+    const quantity = quantityInput ? toMoneyInteger(quantityInput.value) : 0;
     
-    // Calculate amount
-    const amount = quantity * price;
+    // Calculate amount using money-utils (số nguyên)
+    const amount = multiplyMoney(quantity, price);
     
     // Update or create fee
     updateFeeField(feeId, householdId, categoryId, periodId, 'unitPrice', price, amount);
@@ -1371,14 +1385,14 @@ function updateFeeField(feeId, householdId, categoryId, periodId, field, value, 
         let unitPrice = 0;
         
         if (field === 'quantity') {
-            quantity = value;
-            unitPrice = unitPriceInput ? parseFloat(unitPriceInput.value) || 0 : 0;
+            quantity = toMoneyInteger(value);
+            unitPrice = unitPriceInput ? toMoneyInteger(unitPriceInput.value) : 0;
         } else if (field === 'unitPrice') {
-            quantity = quantityInput ? parseFloat(quantityInput.value) || 0 : 0;
-            unitPrice = value;
+            quantity = quantityInput ? toMoneyInteger(quantityInput.value) : 0;
+            unitPrice = toMoneyInteger(value);
         } else if (field === 'status') {
-            quantity = quantityInput ? parseFloat(quantityInput.value) || 0 : 0;
-            unitPrice = unitPriceInput ? parseFloat(unitPriceInput.value) || 0 : 0;
+            quantity = quantityInput ? toMoneyInteger(quantityInput.value) : 0;
+            unitPrice = unitPriceInput ? toMoneyInteger(unitPriceInput.value) : 0;
         }
         
         // Only create fee if quantity or unitPrice is provided
@@ -1389,13 +1403,16 @@ function updateFeeField(feeId, householdId, categoryId, periodId, field, value, 
         // Get due date from billing period or use current date
         const dueDate = new Date().toISOString().split('T')[0]; // Default to today
         
+        // Tính amount bằng money-utils (số nguyên)
+        const finalAmount = calculatedAmount !== null ? toMoneyInteger(calculatedAmount) : multiplyMoney(quantity, unitPrice);
+        
         const newFee = {
             household: { id: householdId },
             feeCategory: { id: categoryId },
             billingPeriod: { id: periodId },
             quantity: quantity,
             unitPrice: unitPrice,
-            amount: calculatedAmount !== null ? calculatedAmount : (quantity * unitPrice),
+            amount: finalAmount,
             status: field === 'status' ? value : 'PENDING',
             dueDate: dueDate
         };
@@ -1431,10 +1448,10 @@ function updateFeeField(feeId, householdId, categoryId, periodId, field, value, 
                 }
             }
             
-            // Update amount display
+            // Update amount display với format đầy đủ số không
             const amountCell = document.getElementById(`amount_${householdId}_${categoryId}`);
             if (amountCell) {
-                amountCell.textContent = (fee.amount || 0).toLocaleString('vi-VN') + 'đ';
+                amountCell.textContent = formatMoney(fee.amount || 0);
             }
             // Update household total
             updateHouseholdTotal(householdId);
@@ -1460,9 +1477,11 @@ function updateFeeField(feeId, householdId, categoryId, periodId, field, value, 
                 fee.status = value;
             }
             
-            // Recalculate amount if quantity or unitPrice changed
+            // Recalculate amount if quantity or unitPrice changed using money-utils
             if (field === 'quantity' || field === 'unitPrice') {
-                fee.amount = calculatedAmount !== null ? calculatedAmount : ((fee.quantity || 0) * (fee.unitPrice || 0));
+                const qty = toMoneyInteger(fee.quantity || 0);
+                const price = toMoneyInteger(fee.unitPrice || 0);
+                fee.amount = calculatedAmount !== null ? toMoneyInteger(calculatedAmount) : multiplyMoney(qty, price);
             }
             
             return fetch(`/api/household-fees/${feeId}`, {
@@ -1476,10 +1495,10 @@ function updateFeeField(feeId, householdId, categoryId, periodId, field, value, 
             return res.json();
         })
         .then(updatedFee => {
-            // Update amount display
+            // Update amount display với format đầy đủ số không
             const amountCell = document.getElementById(`amount_${householdId}_${categoryId}`);
             if (amountCell && (field === 'quantity' || field === 'unitPrice')) {
-                amountCell.textContent = (updatedFee.amount || 0).toLocaleString('vi-VN') + 'đ';
+                amountCell.textContent = formatMoney(updatedFee.amount || 0);
             }
             // Update household total
             updateHouseholdTotal(householdId);
@@ -1496,22 +1515,25 @@ function updateHouseholdTotal(householdId) {
     const tbody = document.getElementById(`householdTableBody_${householdId}`);
     if (!tbody) return;
     
-    let total = 0;
+    // Sử dụng money-utils để tính tổng chính xác
     const amountCells = tbody.querySelectorAll(`[id^="amount_${householdId}_"]`);
-    amountCells.forEach(cell => {
-        const text = cell.textContent.replace(/[^\d,.]/g, '').replace(/,/g, '');
-        const amount = parseFloat(text) || 0;
-        total += amount;
-    });
+    const total = calculateTotalFromCells(amountCells);
     
-    // Find and update household total display
+    // Find and update household total display với format đầy đủ số không
     const householdCard = tbody.closest('div[style*="background: white"]');
     if (householdCard) {
         const totalElement = householdCard.querySelector('div[style*="font-size: 20px"][style*="color: #e67e22"]');
         if (totalElement) {
-            totalElement.textContent = total.toLocaleString('vi-VN') + 'đ';
+            totalElement.textContent = formatMoney(total);
         }
     }
+    
+    // Lưu dữ liệu tổng tiền của hộ dân để thống kê
+    saveMoneyData(`household_${householdId}_total`, {
+        householdId: householdId,
+        total: total,
+        timestamp: new Date().toISOString()
+    });
 }
 
 function displayStatisticsAllPeriods(categories, fees, periods, households) {
@@ -1534,13 +1556,22 @@ function displayStatisticsAllPeriods(categories, fees, periods, households) {
     let totalHouseholds = households.length;
     
     fees.forEach(fee => {
-        const amount = fee.amount ? parseFloat(fee.amount) : 0;
-        grandTotal += amount;
+        const amount = toMoneyInteger(fee.amount || 0);
+        grandTotal = addMoney(grandTotal, amount);
         if (fee.status === 'PAID') {
             totalPaid++;
         } else {
             totalPending++;
         }
+    });
+    
+    // Lưu dữ liệu tổng tiền tất cả các kỳ để thống kê
+    saveMoneyData('all_periods_total', {
+        grandTotal: grandTotal,
+        totalPaid: totalPaid,
+        totalPending: totalPending,
+        totalHouseholds: totalHouseholds,
+        timestamp: new Date().toISOString()
     });
     
     // Build HTML
@@ -1566,7 +1597,7 @@ function displayStatisticsAllPeriods(categories, fees, periods, households) {
                 </div>
                 <div style="background: white; padding: 15px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     <div style="color: #666; font-size: 14px;">Tổng tiền</div>
-                    <div style="font-size: 24px; font-weight: bold; color: #e67e22;">${grandTotal.toLocaleString('vi-VN')}đ</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #e67e22;">${formatMoney(grandTotal)}</div>
                 </div>
             </div>
             <div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 6px; color: #856404;">
