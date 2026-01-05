@@ -1,7 +1,9 @@
 package com.bluemoon.bluemoon.service.impl;
 
+import com.bluemoon.bluemoon.entity.BillingPeriod;
 import com.bluemoon.bluemoon.entity.HouseholdFee;
 import com.bluemoon.bluemoon.exception.ResourceNotFoundException;
+import com.bluemoon.bluemoon.repository.BillingPeriodRepository;
 import com.bluemoon.bluemoon.repository.HouseholdFeeRepository;
 import com.bluemoon.bluemoon.service.HouseholdFeeService;
 import org.springframework.stereotype.Service;
@@ -14,9 +16,12 @@ import java.util.List;
 public class HouseholdFeeServiceImpl implements HouseholdFeeService {
 
     private final HouseholdFeeRepository householdFeeRepository;
+    private final BillingPeriodRepository billingPeriodRepository;
 
-    public HouseholdFeeServiceImpl(HouseholdFeeRepository householdFeeRepository) {
+    public HouseholdFeeServiceImpl(HouseholdFeeRepository householdFeeRepository,
+                                  BillingPeriodRepository billingPeriodRepository) {
         this.householdFeeRepository = householdFeeRepository;
+        this.billingPeriodRepository = billingPeriodRepository;
     }
     @Override
     public List<HouseholdFee> getByHouseholdId(Long householdId) {
@@ -73,6 +78,14 @@ public class HouseholdFeeServiceImpl implements HouseholdFeeService {
     @Transactional(readOnly = true)
     public List<HouseholdFee> getAll() {
         return householdFeeRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HouseholdFee> getByPeriodId(Long periodId) {
+        BillingPeriod period = billingPeriodRepository.findById(periodId)
+                .orElseThrow(() -> new ResourceNotFoundException("BillingPeriod not found with id " + periodId));
+        return householdFeeRepository.findByBillingPeriod(period);
     }
     
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -58,7 +59,11 @@ public class FeeCategoryServiceImpl implements FeeCategoryService {
     @Override
     @Transactional(readOnly = true)
     public List<FeeCategory> getAll() {
-        return feeCategoryRepository.findAll();
+        // Sort by ID ascending
+        return feeCategoryRepository.findAll().stream()
+                .sorted((a, b) -> Long.compare(a.getId() != null ? a.getId() : 0L, 
+                                             b.getId() != null ? b.getId() : 0L))
+                .collect(Collectors.toList());
     }
 
     @Override

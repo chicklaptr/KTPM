@@ -46,6 +46,11 @@
   <artifactId>spring-boot-starter-validation</artifactId>
 </dependency>
 
+        <!-- Password Encoding (BCrypt) -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
 
         <!-- Testing -->
         <dependency>

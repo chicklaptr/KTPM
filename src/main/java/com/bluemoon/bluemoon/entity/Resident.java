@@ -1,14 +1,14 @@
 package com.bluemoon.bluemoon.entity;
 
 import jakarta.persistence.*;
-
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "resident")
-
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Resident {
 
     @Id
@@ -46,6 +46,7 @@ public class Resident {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "household_id", nullable = false)
+    @JsonIgnoreProperties({"residents", "hibernateLazyInitializer", "handler"})
     private Household household;
 
     @Column(name = "created_at")
