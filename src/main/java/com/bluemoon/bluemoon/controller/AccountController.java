@@ -1,28 +1,36 @@
 package com.bluemoon.bluemoon.controller;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.bluemoon.bluemoon.entity.Account;
-import com.bluemoon.bluemoon.entity.Role;
 import com.bluemoon.bluemoon.entity.Resident;
+import com.bluemoon.bluemoon.entity.Role;
 import com.bluemoon.bluemoon.exception.BadRequestException;
 import com.bluemoon.bluemoon.exception.ConflictException;
 import com.bluemoon.bluemoon.service.AccountService;
-
-import jakarta.validation.Valid;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
+import com.bluemoon.bluemoon.util.PasswordEncoderUtil;
 
 @RestController
 @RequestMapping("/api/accounts")
 public class AccountController {
 
     private final AccountService accountService;
+    private final PasswordEncoderUtil passwordEncoderUtil;
 
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountService accountService, PasswordEncoderUtil passwordEncoderUtil) {
         this.accountService = accountService;
+        this.passwordEncoderUtil = passwordEncoderUtil;
     }
 
     @PostMapping
@@ -41,7 +49,9 @@ public class AccountController {
             
             Account account = new Account();
             account.setUsername(((String) accountData.get("username")).trim());
-            account.setPassword((String) accountData.get("password"));
+            // Mã hóa mật khẩu trước khi gán vào Account ---
+            String rawPassword = (String) accountData.get("password");
+            account.setPassword(passwordEncoderUtil.encode(rawPassword)); 
             
             // Set role (required)
             try {
@@ -110,9 +120,11 @@ public class AccountController {
             Account account = new Account();
             account.setUsername(((String) accountData.get("username")).trim());
             
-            // Only update password if provided
+            // Mã hóa và cập nhật nếu password được gửi lên
             if (accountData.get("password") != null && !((String) accountData.get("password")).isEmpty()) {
-                account.setPassword((String) accountData.get("password"));
+                String rawPassword = (String) accountData.get("password");
+                // Mã hóa mật khẩu thô trước khi gán vào đối tượng account
+                account.setPassword(passwordEncoderUtil.encode(rawPassword));
             }
             
             // Set role (required)
@@ -189,10 +201,14 @@ public class AccountController {
     public ResponseEntity<Account> resetPassword(@PathVariable Long id,
                                                  @RequestBody Map<String, String> request) {
         String newPassword = request.get("newPassword");
+        // 1. Kiểm tra mật khẩu mới có trống hay không
         if (newPassword == null || newPassword.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+                     return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(accountService.resetPassword(id, newPassword));
+        // 2. MÃ HÓA mật khẩu mới bằng BCrypt trước khi lưu
+        String encodedPassword = passwordEncoderUtil.encode(newPassword);
+        // 3. Chuyển mật khẩu ĐÃ MÃ HÓA vào Service để cập nhật Database
+        return ResponseEntity.ok(accountService.resetPassword(id, encodedPassword));
     }
 }
 
