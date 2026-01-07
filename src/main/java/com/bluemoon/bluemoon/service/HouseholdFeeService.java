@@ -17,4 +17,5 @@ public interface HouseholdFeeService {
     List<HouseholdFee> getByPeriodId(Long periodId);
                 
     List<HouseholdFee> getAll();
+    List<HouseholdFee> generateForPeriod(Long periodId);
 }
