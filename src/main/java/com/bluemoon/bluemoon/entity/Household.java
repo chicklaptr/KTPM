@@ -49,6 +49,9 @@ public class Household {
     @Column(name = "active")
     private Boolean active = true;
     
+    @Column(name = "owns_apartment")
+    private Boolean ownsApartment = false; // true if household owns the apartment, false if renting
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -149,5 +152,13 @@ public class Household {
 
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
+	}
+
+	public Boolean getOwnsApartment() {
+		return ownsApartment;
+	}
+
+	public void setOwnsApartment(Boolean ownsApartment) {
+		this.ownsApartment = ownsApartment;
 	}
 }

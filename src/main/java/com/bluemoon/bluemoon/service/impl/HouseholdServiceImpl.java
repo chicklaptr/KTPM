@@ -38,6 +38,7 @@ public class HouseholdServiceImpl implements HouseholdService {
         existing.setMoveInDate(household.getMoveInDate());
         existing.setMoveOutDate(household.getMoveOutDate());
         existing.setActive(household.getActive());
+        existing.setOwnsApartment(household.getOwnsApartment());
 
         return householdRepository.save(existing);
     }

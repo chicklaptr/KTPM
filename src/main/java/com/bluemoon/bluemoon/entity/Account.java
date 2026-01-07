@@ -3,6 +3,8 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.*;
 import jakarta.persistence.Entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "account")
@@ -17,11 +19,13 @@ public class Account {
 	
 	@NotBlank @Size(min=6,max=100)
 	@Column(name = "password", nullable = false, length = 100)
+	@JsonIgnore
 	private String password;
 	
 	@NotNull
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "role_id", nullable = false)
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Role role;
 	
 	
@@ -34,6 +38,7 @@ public class Account {
     
     @OneToOne
     @JoinColumn(name = "resident_id")
+    @JsonIgnoreProperties({"household", "hibernateLazyInitializer", "handler"})
     private Resident resident;
 	public Long getId() {
 		return id;

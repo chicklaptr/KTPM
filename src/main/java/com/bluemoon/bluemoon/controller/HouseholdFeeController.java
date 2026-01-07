@@ -61,4 +61,19 @@ public class HouseholdFeeController {
     public ResponseEntity<List<HouseholdFee>> getAll() {
         return ResponseEntity.ok(householdFeeService.getAll());
     }
+
+    @GetMapping("/by-period/{periodId}")
+    public ResponseEntity<List<HouseholdFee>> getByPeriod(@PathVariable Long periodId) {
+        try {
+            List<HouseholdFee> fees = householdFeeService.getByPeriodId(periodId);
+            return ResponseEntity.ok(fees);
+        } catch (com.bluemoon.bluemoon.exception.ResourceNotFoundException e) {
+            // Return empty list if period not found
+            return ResponseEntity.ok(java.util.Collections.emptyList());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Collections.emptyList());
+        }
+    }
 }

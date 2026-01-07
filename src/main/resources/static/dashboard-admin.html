@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard - Chung cư Bluemoon</title>
+    <!-- Libraries for Excel and PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -16,10 +19,12 @@
             color: white;
             position: fixed;
             padding-top: 20px;
+            overflow-y: auto;
         }
         .sidebar h2 {
             text-align: center;
             margin-bottom: 30px;
+            font-size: 18px;
         }
         .sidebar a {
             display: block;
@@ -27,6 +32,7 @@
             color: white;
             text-decoration: none;
             border-bottom: 1px solid #1a252f;
+            cursor: pointer;
         }
         .sidebar a:hover {
             background: #34495e;
@@ -45,24 +51,131 @@
             width: 100%;
             border-collapse: collapse;
             background: white;
+            margin-top: 20px;
         }
         th, td {
             padding: 12px;
             border: 1px solid #ccc;
+            text-align: left;
         }
         th {
             background: #3498db;
             color: white;
         }
         .btn {
-            padding: 7px 14px;
+            padding: 8px 16px;
             border: none;
             background: #3498db;
             color: white;
             cursor: pointer;
+            border-radius: 4px;
+            margin: 2px;
+        }
+        .btn:hover {
+            background: #2980b9;
         }
         .btn-danger {
             background: #e74c3c;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        .btn-success {
+            background: #27ae60;
+        }
+        .btn-success:hover {
+            background: #229954;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 50px auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 700px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        @media (max-height: 700px) {
+            .modal-content {
+                top: 0;
+                transform: none;
+                margin: 20px auto;
+            }
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        .form-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+        .form-group .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        .form-group input.error,
+        .form-group select.error {
+            border-color: #e74c3c;
+        }
+        .search-box {
+            margin-bottom: 15px;
+        }
+        .search-box input {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -70,12 +183,13 @@
 
 <div class="sidebar">
     <h2>QUẢN LÝ CHUNG CƯ</h2>
-
     <a onclick="show('households')">🏠 Xem tất cả hộ dân</a>
+    <a onclick="show('fee-categories')">💰 Quản lý loại phí</a>
     <a onclick="show('cost-stats')">📊 Thống kê chi phí</a>
     <a onclick="show('billing')">🧾 Quản lý hóa đơn tháng</a>
     <a onclick="show('accounts')">👥 Quản lý tài khoản cư dân</a>
     <a onclick="show('reports')">📑 Xem báo cáo</a>
+    <a href="/login-admin.html" style="color: #e74c3c; margin-top: 20px;">🚪 Đăng xuất</a>
 </div>
 
 <div class="content">
@@ -83,61 +197,392 @@
     <!-- Hộ dân -->
     <div id="households" class="section active">
         <h2>Danh sách hộ dân</h2>
-        <button class="btn">+ Thêm hộ dân</button>
-        <br><br>
+        <button class="btn btn-success" onclick="openHouseholdForm()">+ Thêm hộ dân</button>
+        <div class="search-box">
+            <input type="text" id="searchHousehold" placeholder="Tìm kiếm theo tên, căn hộ, số điện thoại..." onkeyup="filterHouseholds()">
+        </div>
         <table>
-            <tr>
-                <th>ID</th>
-                <th>Chủ hộ</th>
-                <th>Căn hộ</th>
-                <th>Số điện thoại</th>
-                <th>Hành động</th>
-            </tr>
-            <tr>
-                <td>1</td>
-                <td>Nguyễn Văn A</td>
-                <td>A101</td>
-                <td>0123456789</td>
-                <td>
-                    <button class="btn">Sửa</button>
-                    <button class="btn btn-danger">Xoá</button>
-                </td>
-            </tr>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Mã hộ</th>
+                    <th>Chủ hộ</th>
+                    <th>Căn hộ</th>
+                    <th>Số điện thoại</th>
+                    <th>Số thành viên</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="householdsTableBody">
+                <tr><td colspan="8" style="text-align:center">Đang tải...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Loại phí -->
+    <div id="fee-categories" class="section">
+        <h2>Quản lý loại phí</h2>
+        <button class="btn btn-success" onclick="openFeeCategoryForm()">+ Thêm loại phí mới</button>
+        <div class="search-box">
+            <input type="text" id="searchFeeCategory" placeholder="Tìm kiếm theo mã, tên loại phí..." onkeyup="filterFeeCategories()">
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Mã loại phí</th>
+                    <th>Tên loại phí</th>
+                    <th>Mô tả</th>
+                    <th>Đơn vị</th>
+                    <th>Số tiền mặc định</th>
+                    <th>Cố định hàng tháng</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="feeCategoriesTableBody">
+                <tr><td colspan="9" style="text-align:center">Đang tải...</td></tr>
+            </tbody>
         </table>
     </div>
 
     <!-- Thống kê -->
     <div id="cost-stats" class="section">
         <h2>Thống kê chi phí toàn bộ tòa nhà</h2>
-        <p>Biểu đồ hoặc bảng thống kê sẽ đặt ở đây.</p>
+        <div style="margin-bottom: 20px;">
+            <label>Chọn kỳ thu phí: </label>
+            <select id="statsPeriodSelect" onchange="loadStatistics()" style="padding: 8px; margin-left: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">-- Chọn kỳ thu phí --</option>
+            </select>
+            <button class="btn" onclick="loadStatistics()" style="margin-left: 10px;">Tải lại</button>
+        </div>
+        <div id="costStatsContent">
+            <p>Vui lòng chọn kỳ thu phí để xem thống kê</p>
+        </div>
     </div>
 
     <!-- Hóa đơn -->
     <div id="billing" class="section">
         <h2>Quản lý hóa đơn tháng</h2>
-        <p>Danh sách hóa đơn, lọc theo tháng, năm…</p>
+        <button class="btn btn-success" onclick="openBillingPeriodForm()">+ Tạo kỳ thu phí mới</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Kỳ thu phí</th>
+                    <th>Ngày bắt đầu</th>
+                    <th>Ngày kết thúc</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="billingPeriodsTableBody">
+                <tr><td colspan="6" style="text-align:center">Đang tải...</td></tr>
+            </tbody>
+        </table>
     </div>
 
     <!-- Tài khoản -->
     <div id="accounts" class="section">
         <h2>Quản lý tài khoản cư dân</h2>
-        <p>Thêm / sửa / xoá tài khoản cư dân.</p>
+        <button class="btn btn-success" onclick="openAccountForm()">+ Tạo tài khoản mới</button>
+        <div style="margin: 15px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+            <div class="search-box" style="flex: 1; min-width: 200px;">
+                <input type="text" id="searchAccount" placeholder="Tìm kiếm theo username, tên cư dân..." onkeyup="filterAccounts()">
+            </div>
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <label>Lọc theo vai trò:</label>
+                <select id="filterAccountRole" onchange="filterAccounts()" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="">Tất cả</option>
+                    <option value="1">RESIDENT</option>
+                    <option value="2">ADMIN</option>
+                </select>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Vai trò</th>
+                    <th>Cư dân</th>
+                    <th>Ngày tạo</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="accountsTableBody">
+                <tr><td colspan="6" style="text-align:center">Đang tải...</td></tr>
+            </tbody>
+        </table>
     </div>
 
     <!-- Báo cáo -->
     <div id="reports" class="section">
         <h2>Xem báo cáo</h2>
-        <p>Xuất PDF, Excel…</p>
+        <div id="reportsContent">
+            <p>Đang tải...</p>
+        </div>
     </div>
 
 </div>
 
-<script>
-function show(id) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-}
-</script>
+<!-- Modal: Household Form -->
+<div id="householdModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('householdModal')">&times;</span>
+        <h2 id="householdFormTitle">Thêm hộ dân mới</h2>
+        <form id="householdForm" onsubmit="saveHousehold(event)">
+            <div class="form-group">
+                <label>Mã hộ *</label>
+                <input type="text" id="householdCode" required maxlength="50">
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Tên chủ hộ *</label>
+                <input type="text" id="ownerName" required maxlength="100">
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Số căn hộ *</label>
+                <input type="text" id="apartmentNumber" required maxlength="20">
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Số điện thoại</label>
+                <input type="text" id="phone" maxlength="20" placeholder="10-11 chữ số">
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Số thành viên</label>
+                <input type="number" id="membersCount" min="1">
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Tình trạng cư trú</label>
+                <select id="residenceStatus">
+                    <option value="">-- Chọn --</option>
+                    <option value="DANG_O">Đang ở</option>
+                    <option value="DA_CHUYEN">Đã chuyển</option>
+                    <option value="TAM_VANG">Tạm vắng</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Ngày vào ở</label>
+                <input type="date" id="moveInDate">
+            </div>
+            <div class="form-group">
+                <label>Ngày chuyển đi</label>
+                <input type="date" id="moveOutDate">
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="householdOwnsApartment"> Đã mua căn hộ (không cần đóng phí thuê)
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="householdActive" checked> Hoạt động
+                </label>
+            </div>
+            <button type="submit" class="btn btn-success">Lưu</button>
+            <button type="button" class="btn" onclick="closeModal('householdModal')">Hủy</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Billing Period Form -->
+<div id="billingPeriodModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('billingPeriodModal')">&times;</span>
+        <h2 id="billingPeriodFormTitle">Tạo kỳ thu phí mới</h2>
+        <form id="billingPeriodForm" onsubmit="saveBillingPeriod(event)">
+            <div class="form-group">
+                <label>Năm *</label>
+                <input type="number" id="periodYear" min="2000" max="2100" required>
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Tháng *</label>
+                <input type="number" id="periodMonth" min="1" max="12" required>
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Ngày bắt đầu *</label>
+                <input type="date" id="periodStartDate" required>
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Ngày kết thúc *</label>
+                <input type="date" id="periodEndDate" required>
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="periodClosed"> Đã đóng kỳ
+                </label>
+            </div>
+            <button type="submit" class="btn btn-success">Lưu</button>
+            <button type="button" class="btn" onclick="closeModal('billingPeriodModal')">Hủy</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Period Details -->
+<div id="periodDetailsModal" class="modal">
+    <div class="modal-content" style="max-width: 1200px;">
+        <span class="close" onclick="closeModal('periodDetailsModal')">&times;</span>
+        <h2 id="periodDetailsTitle">Chi tiết kỳ thu phí</h2>
+        <div id="periodInfo" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
+            <strong>Kỳ thu phí:</strong> <span id="periodInfoText"></span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Mã hộ</th>
+                    <th>Chủ hộ</th>
+                    <th>Căn hộ</th>
+                    <th>Loại phí</th>
+                    <th>Số lượng</th>
+                    <th>Đơn giá</th>
+                    <th>Số tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Hạn thanh toán</th>
+                </tr>
+            </thead>
+            <tbody id="periodDetailsTableBody">
+            </tbody>
+        </table>
+        <div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 4px;">
+            <strong>Tổng số hộ:</strong> <span id="totalHouseholds">0</span> | 
+            <strong>Tổng số phí:</strong> <span id="totalFees">0</span> | 
+            <strong>Tổng tiền:</strong> <span id="totalAmount">0đ</span>
+        </div>
+        <button class="btn" onclick="closeModal('periodDetailsModal')" style="margin-top: 15px;">Đóng</button>
+    </div>
+</div>
+
+<!-- Modal: Fee Category Form -->
+<div id="feeCategoryModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('feeCategoryModal')">&times;</span>
+        <h2 id="feeCategoryFormTitle">Thêm loại phí mới</h2>
+        <form id="feeCategoryForm" onsubmit="saveFeeCategory(event)">
+            <div class="form-group">
+                <label>Mã loại phí *</label>
+                <input type="text" id="feeCategoryCode" required maxlength="50" placeholder="VD: DIEN, NUOC, PHI_QL">
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Tên loại phí *</label>
+                <input type="text" id="feeCategoryName" required maxlength="100" placeholder="VD: Điện, Nước, Phí quản lý">
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Mô tả</label>
+                <input type="text" id="feeCategoryDescription" maxlength="255" placeholder="Mô tả chi tiết về loại phí">
+            </div>
+            <div class="form-group">
+                <label>Đơn vị</label>
+                <input type="text" id="feeCategoryUnit" maxlength="50" placeholder="VD: kWh, m³, tháng">
+            </div>
+            <div class="form-group">
+                <label>Số tiền mặc định</label>
+                <input type="number" id="feeCategoryDefaultAmount" min="0" step="0.01" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="feeCategoryFixedMonthly" checked> Cố định hàng tháng
+                </label>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="feeCategoryActive" checked> Hoạt động
+                </label>
+            </div>
+            <button type="submit" class="btn btn-success">Lưu</button>
+            <button type="button" class="btn" onclick="closeModal('feeCategoryModal')">Hủy</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Account Form -->
+<div id="accountModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('accountModal')">&times;</span>
+        <h2 id="accountFormTitle">Tạo tài khoản mới</h2>
+        <form id="accountForm" onsubmit="saveAccount(event)">
+            <div class="form-group">
+                <label>Username *</label>
+                <input type="text" id="accountUsername" required maxlength="50" placeholder="Nhập username">
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Password <span id="passwordRequired">*</span></label>
+                <input type="password" id="accountPassword" minlength="6" placeholder="Tối thiểu 6 ký tự">
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label>Vai trò *</label>
+                <select id="accountRoleId" required>
+                    <option value="">-- Chọn vai trò --</option>
+                    <option value="1">RESIDENT</option>
+                    <option value="2">ADMIN</option>
+                </select>
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group" id="residentFieldGroup">
+                <label>Cư dân (dành cho RESIDENT)</label>
+                <select id="accountResidentId">
+                    <option value="">-- Chọn cư dân (tùy chọn) --</option>
+                </select>
+                <small style="color: #666; font-size: 12px;">Chỉ chọn nếu tài khoản RESIDENT dành cho cư dân cụ thể. Tài khoản ADMIN không cần chọn.</small>
+            </div>
+            <button type="submit" class="btn btn-success">Lưu</button>
+            <button type="button" class="btn" onclick="closeModal('accountModal')">Hủy</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Account Details -->
+<div id="accountDetailsModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('accountDetailsModal')">&times;</span>
+        <h2>Chi tiết tài khoản</h2>
+        <table style="width: 100%; margin-top: 20px;">
+            <tr>
+                <th style="width: 150px; text-align: left;">ID</th>
+                <td id="accountDetailsId"></td>
+            </tr>
+            <tr>
+                <th>Username</th>
+                <td id="accountDetailsUsername"></td>
+            </tr>
+            <tr>
+                <th>Vai trò</th>
+                <td id="accountDetailsRole"></td>
+            </tr>
+            <tr>
+                <th>Cư dân</th>
+                <td id="accountDetailsResident"></td>
+            </tr>
+            <tr>
+                <th>Ngày tạo</th>
+                <td id="accountDetailsCreated"></td>
+            </tr>
+            <tr>
+                <th>Ngày cập nhật</th>
+                <td id="accountDetailsUpdated"></td>
+            </tr>
+        </table>
+        <button class="btn" onclick="closeModal('accountDetailsModal')" style="margin-top: 15px;">Đóng</button>
+    </div>
+</div>
+
+<script src="/money-utils.js"></script>
+<script src="/admin.js"></script>
 
 </body>
 </html>
