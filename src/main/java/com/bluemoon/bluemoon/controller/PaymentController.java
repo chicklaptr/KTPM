@@ -9,6 +9,7 @@ import com.bluemoon.bluemoon.service.PaymentService;
 import com.bluemoon.bluemoon.service.ResidentService;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,7 @@ public class PaymentController {
     }
     
     @PostMapping
-    public ResponseEntity<Payment> create(@RequestBody Payment payment) {
+    public ResponseEntity<Payment> create(@Valid @RequestBody Payment payment) {
         return ResponseEntity.ok(paymentService.create(payment));
     }
 

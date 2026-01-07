@@ -6,6 +6,9 @@ import com.bluemoon.bluemoon.entity.Resident;
 import com.bluemoon.bluemoon.exception.BadRequestException;
 import com.bluemoon.bluemoon.exception.ConflictException;
 import com.bluemoon.bluemoon.service.AccountService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

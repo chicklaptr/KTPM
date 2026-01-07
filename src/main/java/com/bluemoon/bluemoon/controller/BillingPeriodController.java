@@ -2,6 +2,9 @@ package com.bluemoon.bluemoon.controller;
 
 import com.bluemoon.bluemoon.entity.BillingPeriod;
 import com.bluemoon.bluemoon.service.BillingPeriodService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,12 +21,12 @@ public class BillingPeriodController {
     }
 
     @PostMapping
-    public ResponseEntity<BillingPeriod> create(@RequestBody BillingPeriod period) {
+    public ResponseEntity<BillingPeriod> create(@Valid @RequestBody BillingPeriod period) {
         return ResponseEntity.ok(billingPeriodService.create(period));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BillingPeriod> update(@PathVariable Long id,
+    public ResponseEntity<BillingPeriod> update(@Valid @PathVariable Long id,
                                                 @RequestBody BillingPeriod period) {
         return ResponseEntity.ok(billingPeriodService.update(id, period));	
     }

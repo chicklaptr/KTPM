@@ -2,6 +2,9 @@ package com.bluemoon.bluemoon.controller;
 
 import com.bluemoon.bluemoon.entity.FeeCategory;
 import com.bluemoon.bluemoon.service.FeeCategoryService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,12 +21,12 @@ public class FeeCategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<FeeCategory> create(@RequestBody FeeCategory feeCategory) {
+    public ResponseEntity<FeeCategory> create(@Valid @RequestBody FeeCategory feeCategory) {
         return ResponseEntity.ok(feeCategoryService.create(feeCategory));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<FeeCategory> update(@PathVariable Long id,
+    public ResponseEntity<FeeCategory> update(@Valid @PathVariable Long id,
                                               @RequestBody FeeCategory feeCategory) {
         return ResponseEntity.ok(feeCategoryService.update(id, feeCategory));
     }

@@ -1,5 +1,7 @@
 package com.bluemoon.bluemoon.controller;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+
 import com.bluemoon.bluemoon.entity.Resident;
 import com.bluemoon.bluemoon.service.ResidentService;
 import org.springframework.http.ResponseEntity;
@@ -29,12 +31,12 @@ public class ResidentController {
     }
     
     @PostMapping
-    public ResponseEntity<Resident> create(@RequestBody Resident resident) {
+    public ResponseEntity<Resident> create(@Valid @RequestBody Resident resident) {
         return ResponseEntity.ok(residentService.create(resident));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Resident> update(@PathVariable Long id,
+    public ResponseEntity<Resident> update(@Valid @PathVariable Long id,
                                            @RequestBody Resident resident) {
         return ResponseEntity.ok(residentService.update(id, resident));
     }

@@ -6,6 +6,7 @@ import com.bluemoon.bluemoon.service.HouseholdService;
 import com.bluemoon.bluemoon.service.ResidentService;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,12 +38,12 @@ public class HouseholdController {
     }
 
     @PostMapping
-    public ResponseEntity<Household> create(@RequestBody Household household) {
+    public ResponseEntity<Household> create(@Valid @RequestBody Household household) {
         return ResponseEntity.ok(householdService.create(household));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Household> update(@PathVariable Long id,
+    public ResponseEntity<Household> update(@Valid @PathVariable Long id,
                                             @RequestBody Household household) {
         return ResponseEntity.ok(householdService.update(id, household));
     }
