@@ -18,8 +18,7 @@ public class FeeCategoryController {
 
     private final FeeCategoryService feeCategoryService;
 
-    public FeeCategoryController(FeeCategoryService feeCategoryService,HttpSession session) {
-    	SessionGuard.requireAdmin(session);
+    public FeeCategoryController(FeeCategoryService feeCategoryService) {
         this.feeCategoryService = feeCategoryService;
     }
 
