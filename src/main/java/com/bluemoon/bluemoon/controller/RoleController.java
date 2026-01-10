@@ -1,7 +1,12 @@
 package com.bluemoon.bluemoon.controller;
 
 import com.bluemoon.bluemoon.entity.Role;
-import com.bluemoon.bluemoon.repository.RoleRepository;
+import com.bluemoon.bluemoon.exception.ResourceNotFoundException;
+import com.bluemoon.bluemoon.service.RoleService;
+import com.bluemoon.bluemoon.session.SessionGuard;
+
+import jakarta.servlet.http.HttpSession;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,22 +16,22 @@ import java.util.List;
 @RequestMapping("/api/roles")
 public class RoleController {
 
-    private final RoleRepository roleRepository;
+    private final RoleService roleService;
 
-    public RoleController(RoleRepository roleRepository) {
-        this.roleRepository = roleRepository;
+    public RoleController(RoleService roleService) {
+        this.roleService = roleService;
     }
 
     @GetMapping
-    public ResponseEntity<List<Role>> getAll() {
-        return ResponseEntity.ok(roleRepository.findAll());
+    public ResponseEntity<List<Role>> getAll(HttpSession session) {
+    	SessionGuard.requireAdmin(session);
+        return ResponseEntity.ok(roleService.getAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Role> getById(@PathVariable Long id) {
-        return roleRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Role> getById(@PathVariable Long id,HttpSession session) {
+    	SessionGuard.requireAdmin(session);
+        return ResponseEntity.ok(roleService.getById(id));
     }
 }
 

@@ -98,10 +98,12 @@ public class HouseholdFeeServiceImpl implements HouseholdFeeService {
     @Override
     @Transactional(readOnly = true)
     public List<HouseholdFee> getByPeriodId(Long periodId) {
-        BillingPeriod period = billingPeriodRepository.findById(periodId)
-                .orElseThrow(() -> new ResourceNotFoundException("BillingPeriod not found with id " + periodId));
-        return householdFeeRepository.findByBillingPeriod(period);
+        if (!billingPeriodRepository.existsById(periodId)) {
+            throw new ResourceNotFoundException("Billing period not found: " + periodId);
+        }
+        return householdFeeRepository.findByBillingPeriodId(periodId);
     }
+
 
     // ✅ THÊM: Sinh phí cho 1 kỳ thu (billing_period)
     // - fixedMonthly = true  -> amount = defaultAmount (tự có tiền)

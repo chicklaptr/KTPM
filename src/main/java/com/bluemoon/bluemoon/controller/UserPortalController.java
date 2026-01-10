@@ -1,6 +1,8 @@
 package com.bluemoon.bluemoon.controller;
 import com.bluemoon.bluemoon.entity.Account;
 import com.bluemoon.bluemoon.entity.Resident;
+import com.bluemoon.bluemoon.exception.ResourceNotFoundException;
+import com.bluemoon.bluemoon.exception.UnauthorizedException;
 import com.bluemoon.bluemoon.entity.HouseholdFee;
 import com.bluemoon.bluemoon.entity.Payment;
 import com.bluemoon.bluemoon.repository.AccountRepository;
@@ -30,10 +32,10 @@ public class UserPortalController {
 	private Resident getLoggedInResident(HttpSession session) {
 		Long residentId = (Long) session.getAttribute("residentId");
 		if(residentId==null)	{
-			throw new RuntimeException("chua dang nhap hoac ko phai resident");
+			throw new UnauthorizedException("Not logged in");
 		}
 		return residentRepository.findById(residentId)
-				.orElseThrow(()-> new RuntimeException("Resident not found"));
+				.orElseThrow(()-> new ResourceNotFoundException("Resident not found"));
 	}
 	
 	@GetMapping("/profile")

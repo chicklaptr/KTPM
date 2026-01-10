@@ -19,7 +19,10 @@ import com.bluemoon.bluemoon.entity.Role;
 import com.bluemoon.bluemoon.exception.BadRequestException;
 import com.bluemoon.bluemoon.exception.ConflictException;
 import com.bluemoon.bluemoon.service.AccountService;
+import com.bluemoon.bluemoon.session.SessionGuard;
 import com.bluemoon.bluemoon.util.PasswordEncoderUtil;
+
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -34,7 +37,8 @@ public class AccountController {
     }
 
     @PostMapping
-    public ResponseEntity<Account> create(@RequestBody Map<String, Object> accountData) {
+    public ResponseEntity<Account> create(@RequestBody Map<String, Object> accountData,HttpSession session) {
+    	SessionGuard.requireAdmin(session);
         try {
             // Validate required fields
             if (accountData.get("username") == null || ((String) accountData.get("username")).trim().isEmpty()) {
@@ -107,7 +111,8 @@ public class AccountController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Account> update(@PathVariable Long id,
-                                         @RequestBody Map<String, Object> accountData) {
+                                         @RequestBody Map<String, Object> accountData,HttpSession session) {
+    	SessionGuard.requireAdmin(session);
         try {
             // Validate required fields
             if (accountData.get("username") == null || ((String) accountData.get("username")).trim().isEmpty()) {
@@ -182,24 +187,28 @@ public class AccountController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id,HttpSession session) {
+    	SessionGuard.requireAdmin(session);
         accountService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Account> getById(@PathVariable Long id) {
+    public ResponseEntity<Account> getById(@PathVariable Long id,HttpSession session) {
+    	SessionGuard.requireAdmin(session);
         return ResponseEntity.ok(accountService.getById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<Account>> getAll() {
+    public ResponseEntity<List<Account>> getAll(HttpSession session) {
+    	SessionGuard.requireAdmin(session);
         return ResponseEntity.ok(accountService.getAll());
     }
     
     @PostMapping("/{id}/reset-password")
     public ResponseEntity<Account> resetPassword(@PathVariable Long id,
-                                                 @RequestBody Map<String, String> request) {
+                                                 @RequestBody Map<String, String> request,HttpSession session) {
+    	SessionGuard.requireAdmin(session);
         String newPassword = request.get("newPassword");
         // 1. Kiểm tra mật khẩu mới có trống hay không
         if (newPassword == null || newPassword.isEmpty()) {
