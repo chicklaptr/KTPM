@@ -219,5 +219,26 @@ public class AccountController {
         // 3. Chuyển mật khẩu ĐÃ MÃ HÓA vào Service để cập nhật Database
         return ResponseEntity.ok(accountService.resetPassword(id, encodedPassword));
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyInfo(HttpSession session) {
+        Long id = (Long) session.getAttribute("admin");
+        if (id == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(accountService.getById(id));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> req, HttpSession session) {
+        Long id = (Long) session.getAttribute("admin");
+        if (id == null) return ResponseEntity.status(401).body("Chưa đăng nhập");
+        
+        Account acc = accountService.getById(id);
+        if (!passwordEncoderUtil.matches(req.get("oldPass"), acc.getPassword())) {
+            return ResponseEntity.badRequest().body("Mật khẩu cũ sai");
+        }
+        
+        accountService.changePassword(id, req.get("newPass")); // Gọi hàm service mới
+        return ResponseEntity.ok("Thành công");
+    }
 }
 
