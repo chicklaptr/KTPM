@@ -26,17 +26,20 @@ public class HouseholdFeeController {
         this.residentService = residentService;
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<?> myHouseholdFees(HttpSession session) {
-        Long residentId = (Long) session.getAttribute("residentId");
-        if (residentId == null) throw new UnauthorizedException("Not logged in ");
-
-        Resident r = residentService.getById(residentId);
-        Long householdId = r.getHousehold().getId(); 
-
-        
-        return ResponseEntity.ok(householdFeeService.getByHouseholdId(householdId));
-    }
+	
+	/*
+	 * @GetMapping("/me") public ResponseEntity<?> myHouseholdFees(HttpSession
+	 * session) { Long residentId = (Long) session.getAttribute("residentId"); if
+	 * (residentId == null) throw new UnauthorizedException("Not logged in ");
+	 * 
+	 * Resident r = residentService.getById(residentId); Long householdId =
+	 * r.getHousehold().getId();
+	 * 
+	 * 
+	 * return ResponseEntity.ok(householdFeeService.getByHouseholdId(householdId));
+	 * }
+	 */
+	 
     
     @PostMapping
     public ResponseEntity<HouseholdFee> create(@Valid @RequestBody HouseholdFee fee,HttpSession session) {

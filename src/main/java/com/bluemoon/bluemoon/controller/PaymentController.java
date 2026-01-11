@@ -31,14 +31,19 @@ public class PaymentController {
         this.householdFeeService = householdFeeService;
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<List<Payment>> myPayments(HttpSession session) {
-        Long residentId = (Long) session.getAttribute("residentId");
-        if (residentId == null) throw new UnauthorizedException("Not logged in ");
-
-        Long householdId = residentService.getById(residentId).getHousehold().getId();
-        return ResponseEntity.ok(paymentService.getByHouseholdId(householdId)); // trả [] nếu không có
-    }
+	
+	/*
+	 * @GetMapping("/me") public ResponseEntity<List<Payment>>
+	 * myPayments(HttpSession session) { Long residentId = (Long)
+	 * session.getAttribute("residentId"); if (residentId == null) throw new
+	 * UnauthorizedException("Not logged in ");
+	 * 
+	 * Long householdId =
+	 * residentService.getById(residentId).getHousehold().getId(); return
+	 * ResponseEntity.ok(paymentService.getByHouseholdId(householdId)); // trả []
+	 * nếu không có }
+	 */
+	 
     
     @PostMapping
     public ResponseEntity<Payment> create(@Valid @RequestBody Payment payment,HttpSession session) {

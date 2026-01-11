@@ -223,18 +223,27 @@ public class AccountController {
         return ResponseEntity.ok(accountService.resetPassword(id, newPassword));
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<?> getMyInfo(HttpSession session) {
-        Long id = (Long) session.getAttribute("admin");
-        if (id == null) throw new UnauthorizedException("Not logged in");
-        return ResponseEntity.ok(accountService.getById(id));
-    }
+	
+	/*
+	 * @GetMapping("/me") public ResponseEntity<?> getMyInfo(HttpSession session) {
+	 * Long id = (Long) session.getAttribute("admin"); if (id == null) throw new
+	 * UnauthorizedException("Not logged in"); return
+	 * ResponseEntity.ok(accountService.getById(id)); }
+	 */
+	 
     // Tự đổi mật khẩu 
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody Map<String, String> req, HttpSession session) {
     	SessionGuard.requireAdmin(session);
         Long id = (Long) session.getAttribute("admin");      
         Account acc = accountService.getById(id);
+        String oldPass = req.get("oldPass");
+        String newPass = req.get("newPass");
+        if (oldPass == null || oldPass.isBlank() || newPass == null || newPass.isBlank())
+            throw new BadRequestException("Thiếu mật khẩu");
+        if (newPass.length() < 6)
+            throw new BadRequestException("Mật khẩu mới phải >= 6 ký tự");
+
         if (!passwordEncoderUtil.matches(req.get("oldPass"), acc.getPassword())) {
             throw new BadRequestException("Mật khẩu cũ không đúng");
         }

@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	   USER INFO
 	================================================== */
 function loadUserInfo() {
-  fetch("/api/residents/me", {
+  fetch("/api/user-portal/profile", {
     credentials: 'same-origin'
   })
     .then((res) => {
@@ -76,7 +76,7 @@ function loadUserInfo() {
 	================================================== */
 function loadHouseholdInfo() {
   // Load thông tin căn hộ trước
-  fetch("/api/households/me", {
+  fetch("/api/user-portal/household", {
     credentials: 'same-origin'
   })
     .then(async (res) => {
@@ -258,7 +258,7 @@ let allBillingPeriods = [];
 	   LOAD BILLING PERIODS
 	================================================== */
 function loadPeriods() {
-  return fetch("/api/billing-periods", {
+  return fetch("/api/user-portal/periods", {
     credentials: 'same-origin'
   })
     .then((res) => {
@@ -319,7 +319,7 @@ function loadPeriods() {
 	================================================== */
 function loadHouseholdFees() {
   Promise.all([
-    fetch("/api/household-fees/me", {
+    fetch("/api/user-portal/fees", {
       credentials: 'same-origin'
     }).then(r => {
       if (!r.ok) throw new Error("Lỗi khi tải danh sách phí");
@@ -457,7 +457,7 @@ function loadHouseholdFees() {
 	   PAYMENT HISTORY
 	================================================== */
 function loadPaymentHistory() {
-  fetch("/api/payments/me", {
+  fetch("/api/user-portal/payments", {
     credentials: 'same-origin'
   })
     .then((res) => {

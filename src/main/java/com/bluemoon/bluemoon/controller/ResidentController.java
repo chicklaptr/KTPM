@@ -22,16 +22,16 @@ public class ResidentController {
         this.residentService = residentService;
     }
     
-    @GetMapping("/me")
-    public ResponseEntity<Resident> getMe(HttpSession session) {
-        Long residentId = (Long) session.getAttribute("residentId");
-
-        if (residentId == null) {
-            throw new UnauthorizedException("Not logged in");
-        }
-        //System.out.println("Resident ID from session: " + residentId);
-        return ResponseEntity.ok(residentService.getById(residentId));
-    }
+	
+	/*
+	 * @GetMapping("/me") public ResponseEntity<Resident> getMe (HttpSession
+	 * session){ Long residentId = (Long) session.getAttribute("residentId");
+	 * 
+	 * if (residentId == null) { throw new UnauthorizedException("Not logged in"); }
+	 * //System.out.println("Resident ID from session: " + residentId); return
+	 * ResponseEntity.ok(residentService.getById(residentId)); }
+	 */
+	 
     
     @PostMapping
     public ResponseEntity<Resident> create(@Valid @RequestBody Resident resident,HttpSession session) {

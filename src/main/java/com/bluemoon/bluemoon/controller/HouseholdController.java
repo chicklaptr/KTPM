@@ -27,24 +27,23 @@ public class HouseholdController {
         this.residentService = residentService;
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<?> myHousehold(HttpSession session) {
-        Long residentId = (Long) session.getAttribute("residentId");
-        if (residentId == null) {
-            throw new UnauthorizedException("Not logged in");
-        }
-
-        Resident r = residentService.getById(residentId);
-        
-        if (r.getHousehold() == null) {
-            throw new ResourceNotFoundException("Resident does not have a household");
-        }
-      
-        Long householdId = r.getHousehold().getId();
-        Household household = householdService.getById(householdId);
-
-        return ResponseEntity.ok(household);
-    }
+	
+	/*
+	 * @GetMapping("/me") public ResponseEntity<?> myHousehold(HttpSession session)
+	 * { Long residentId = (Long) session.getAttribute("residentId"); if (residentId
+	 * == null) { throw new UnauthorizedException("Not logged in"); }
+	 * 
+	 * Resident r = residentService.getById(residentId);
+	 * 
+	 * if (r.getHousehold() == null) { throw new
+	 * ResourceNotFoundException("Resident does not have a household"); }
+	 * 
+	 * Long householdId = r.getHousehold().getId(); Household household =
+	 * householdService.getById(householdId);
+	 * 
+	 * return ResponseEntity.ok(household); }
+	 */
+	 
 
     @PostMapping
     public ResponseEntity<Household> create(@Valid @RequestBody Household household,HttpSession session) {
