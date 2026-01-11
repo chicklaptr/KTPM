@@ -68,10 +68,10 @@ function loadHouseholds() {
                                   h.id
                                 })" title="Xem chi tiết">👁️</button>
                                 <button class="btn-icon btn-edit" onclick="editHousehold(${
-                                  h.id
+                              h.id
                                 })" title="Sửa">✏️</button>
                                 <button class="btn-icon btn-delete" onclick="deleteHousehold(${
-                                  h.id
+                              h.id
                                 })" title="Xóa">🗑️</button>
                             </div>
                         </td>
@@ -440,10 +440,10 @@ function loadFeeCategories() {
                         <td>
                             <div style="display: flex; gap: 4px; align-items: center;">
                                 <button class="btn-icon btn-edit" onclick="editFeeCategory(${
-                                  cat.id
+                              cat.id
                                 })" title="Sửa">✏️</button>
                                 <button class="btn-icon btn-delete" onclick="deleteFeeCategory(${
-                                  cat.id
+                              cat.id
                                 })" title="Xóa">🗑️</button>
                             </div>
                         </td>
@@ -672,10 +672,10 @@ function loadAccounts() {
                         <td>
                             <div style="display: flex; gap: 4px; align-items: center;">
                                 <button class="btn-icon btn-edit" onclick="editAccount(${
-                                  acc.id
+                              acc.id
                                 })" title="Sửa">✏️</button>
                                 <button class="btn-icon btn-delete" onclick="deleteAccount(${
-                                  acc.id
+                              acc.id
                                 })" title="Xóa">🗑️</button>
                             </div>
                         </td>
@@ -952,8 +952,9 @@ function displayStatisticsByPeriod(periodId) {
     // Tính tổng thống kê - chỉ tính từ các phí đã có (không tính các phí chưa tạo)
     let totalHouseholds = households.filter(h => h.active !== false).length;
     let totalFees = fees.length; // Số phí đã được tạo
+    // Hỗ trợ cả UNPAID (từ DB) và PENDING (tương thích)
     let totalPaid = fees.filter(f => f.status === 'PAID').length;
-    let totalPending = fees.filter(f => f.status === 'PENDING').length;
+    let totalPending = fees.filter(f => f.status === 'PENDING' || f.status === 'UNPAID' || f.status === 'PARTIALLY_PAID').length;
     let totalOverdue = fees.filter(f => f.status === 'OVERDUE').length;
     
     // Tính tổng tiền từ các phí đã có
@@ -1022,8 +1023,10 @@ function displayStatisticsByPeriod(periodId) {
         const fee = feeMap[key];
         if (fee && fee.amount) {
           householdTotal += parseFloat(fee.amount) || 0;
+          // Hỗ trợ cả UNPAID (từ DB) và PENDING (tương thích)
           if (fee.status === 'PAID') householdPaid++;
-          else if (fee.status === 'PENDING') householdPending++;
+          else if (fee.status === 'PENDING' || fee.status === 'UNPAID') householdPending++;
+          else if (fee.status === 'PARTIALLY_PAID') householdPending++; // Đếm vào pending
           else if (fee.status === 'OVERDUE') householdOverdue++;
         }
       });
@@ -1071,12 +1074,22 @@ function displayStatisticsByPeriod(periodId) {
         const amount = fee && fee.amount ? parseFloat(fee.amount) : 0;
         const quantity = fee && fee.quantity ? parseFloat(fee.quantity) : '';
         const unitPrice = fee && fee.unitPrice ? parseFloat(fee.unitPrice) : (category.defaultAmount ? parseFloat(category.defaultAmount) : '');
-        const status = fee ? fee.status : 'PENDING';
         
-        const statusColor = status === 'PAID' ? '#27ae60' : 
-                          status === 'PENDING' ? '#f39c12' : '#e74c3c';
-        const statusText = status === 'PAID' ? 'Đã trả' :
-                          status === 'PENDING' ? 'Chờ trả' : 'Quá hạn';
+        // Lấy trạng thái từ database (có thể là UNPAID, PAID, PARTIALLY_PAID, OVERDUE)
+        const dbStatus = fee ? fee.status : 'UNPAID';
+        
+        // Mapping từ database sang hiển thị
+        // UNPAID -> PENDING (Chờ trả) - màu vàng
+        // PAID -> PAID (Đã trả) - màu xanh lá
+        // PARTIALLY_PAID -> PARTIALLY_PAID (Đã trả một phần) - màu xanh dương
+        // OVERDUE -> OVERDUE (Quá hạn) - màu đỏ
+        
+        const statusColor = dbStatus === 'PAID' ? '#27ae60' : 
+                          dbStatus === 'UNPAID' || dbStatus === 'PENDING' ? '#f39c12' : 
+                          dbStatus === 'PARTIALLY_PAID' ? '#3498db' : '#e74c3c';
+        const statusText = dbStatus === 'PAID' ? 'Đã trả' :
+                          dbStatus === 'UNPAID' || dbStatus === 'PENDING' ? 'Chờ trả' :
+                          dbStatus === 'PARTIALLY_PAID' ? 'Đã trả một phần' : 'Quá hạn';
         
         const isFixed = category.fixedMonthly ? 'Cố định' : 'Tự nhập';
         const fixedColor = category.fixedMonthly ? '#27ae60' : '#3498db';
@@ -1098,13 +1111,15 @@ function displayStatisticsByPeriod(periodId) {
           `<span style="color: #95a5a6;">-</span>`;
         
         // Tạo select cho trạng thái (chỉ cho phép chỉnh sửa nếu có fee)
+        // Sử dụng giá trị từ database (UNPAID, PAID, PARTIALLY_PAID, OVERDUE)
         const statusSelect = feeId ?
           `<select id="status_${feeId}" 
                    onchange="updateFeeStatus(${feeId}, ${householdId}, ${categoryId})"
                    style="padding: 5px 8px; border: 2px solid #667eea; border-radius: 4px; font-size: 13px; font-weight: bold; color: ${statusColor}; cursor: pointer; background: white;">
-            <option value="PENDING" ${status === 'PENDING' ? 'selected' : ''} style="color: #f39c12;">Chờ trả</option>
-            <option value="PAID" ${status === 'PAID' ? 'selected' : ''} style="color: #27ae60;">Đã trả</option>
-            <option value="OVERDUE" ${status === 'OVERDUE' ? 'selected' : ''} style="color: #e74c3c;">Quá hạn</option>
+            <option value="UNPAID" ${dbStatus === 'UNPAID' || dbStatus === 'PENDING' ? 'selected' : ''} style="color: #f39c12;">Chờ trả</option>
+            <option value="PAID" ${dbStatus === 'PAID' ? 'selected' : ''} style="color: #27ae60;">Đã trả</option>
+            <option value="PARTIALLY_PAID" ${dbStatus === 'PARTIALLY_PAID' ? 'selected' : ''} style="color: #3498db;">Đã trả một phần</option>
+            <option value="OVERDUE" ${dbStatus === 'OVERDUE' ? 'selected' : ''} style="color: #e74c3c;">Quá hạn</option>
           </select>` :
           `<span style="color: ${statusColor}; font-weight: bold;">${statusText}</span>`;
         
@@ -1995,8 +2010,10 @@ function updateFeeStatus(feeId, householdId, categoryId) {
       if (res.ok) {
         // Cập nhật màu sắc của select để phản ánh trạng thái mới
         const statusColors = {
-          'PENDING': '#f39c12',
+          'UNPAID': '#f39c12',
+          'PENDING': '#f39c12', // Tương thích với giá trị cũ
           'PAID': '#27ae60',
+          'PARTIALLY_PAID': '#3498db',
           'OVERDUE': '#e74c3c'
         };
         statusSelect.style.color = statusColors[newStatus] || '#333';
@@ -2025,7 +2042,7 @@ function updateFeeStatus(feeId, householdId, categoryId) {
       if (periodId && periodId !== 'all') {
         displayStatisticsByPeriod(periodId);
       }
-    });
+  });
 }
 
 // ==================================================
