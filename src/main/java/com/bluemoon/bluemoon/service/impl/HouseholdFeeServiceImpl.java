@@ -33,8 +33,6 @@ public class HouseholdFeeServiceImpl implements HouseholdFeeService {
                                   FeeCategoryRepository feeCategoryRepository) {
         this.householdFeeRepository = householdFeeRepository;
         this.billingPeriodRepository = billingPeriodRepository;
-
-        // ✅ THÊM
         this.householdRepository = householdRepository;
         this.feeCategoryRepository = feeCategoryRepository;
     }

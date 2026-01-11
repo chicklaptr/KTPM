@@ -18,6 +18,7 @@ import com.bluemoon.bluemoon.entity.Resident;
 import com.bluemoon.bluemoon.entity.Role;
 import com.bluemoon.bluemoon.exception.BadRequestException;
 import com.bluemoon.bluemoon.exception.ConflictException;
+import com.bluemoon.bluemoon.exception.UnauthorizedException;
 import com.bluemoon.bluemoon.service.AccountService;
 import com.bluemoon.bluemoon.session.SessionGuard;
 import com.bluemoon.bluemoon.util.PasswordEncoderUtil;
@@ -55,8 +56,8 @@ public class AccountController {
             account.setUsername(((String) accountData.get("username")).trim());
             // Mã hóa mật khẩu trước khi gán vào Account ---
             String rawPassword = (String) accountData.get("password");
-            account.setPassword(passwordEncoderUtil.encode(rawPassword)); 
-            
+            account.setPassword(rawPassword); 
+           
             // Set role (required)
             try {
                 Object roleIdObj = accountData.get("roleId");
@@ -129,7 +130,7 @@ public class AccountController {
             if (accountData.get("password") != null && !((String) accountData.get("password")).isEmpty()) {
                 String rawPassword = (String) accountData.get("password");
                 // Mã hóa mật khẩu thô trước khi gán vào đối tượng account
-                account.setPassword(passwordEncoderUtil.encode(rawPassword));
+                account.setPassword(rawPassword);
             }
             
             // Set role (required)
@@ -204,41 +205,41 @@ public class AccountController {
     	SessionGuard.requireAdmin(session);
         return ResponseEntity.ok(accountService.getAll());
     }
-    
+    //reset mk cho admin khác khi họ quên
     @PostMapping("/{id}/reset-password")
     public ResponseEntity<Account> resetPassword(@PathVariable Long id,
                                                  @RequestBody Map<String, String> request,HttpSession session) {
     	SessionGuard.requireAdmin(session);
+    	Long currentId = (Long) session.getAttribute("admin");
+    	if (currentId != null && currentId.equals(id)) {
+    	    throw new BadRequestException("Không dùng reset-password cho chính mình. Hãy dùng change-password.");
+    	}
         String newPassword = request.get("newPassword");
         // 1. Kiểm tra mật khẩu mới có trống hay không
         if (newPassword == null || newPassword.isEmpty()) {
-                     return ResponseEntity.badRequest().build();
+                     throw new BadRequestException("Mật khẩu mới không được để trống");
         }
-        // 2. MÃ HÓA mật khẩu mới bằng BCrypt trước khi lưu
-        String encodedPassword = passwordEncoderUtil.encode(newPassword);
-        // 3. Chuyển mật khẩu ĐÃ MÃ HÓA vào Service để cập nhật Database
-        return ResponseEntity.ok(accountService.resetPassword(id, encodedPassword));
+        // 2. Chuyển mật khẩu ĐÃ MÃ HÓA vào Service để cập nhật Database
+        return ResponseEntity.ok(accountService.resetPassword(id, newPassword));
     }
 
     @GetMapping("/me")
     public ResponseEntity<?> getMyInfo(HttpSession session) {
         Long id = (Long) session.getAttribute("admin");
-        if (id == null) return ResponseEntity.status(401).build();
+        if (id == null) throw new UnauthorizedException("Not logged in");
         return ResponseEntity.ok(accountService.getById(id));
     }
-
+    // Tự đổi mật khẩu 
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody Map<String, String> req, HttpSession session) {
-        Long id = (Long) session.getAttribute("admin");
-        if (id == null) return ResponseEntity.status(401).body("Chưa đăng nhập");
-        
+    	SessionGuard.requireAdmin(session);
+        Long id = (Long) session.getAttribute("admin");      
         Account acc = accountService.getById(id);
         if (!passwordEncoderUtil.matches(req.get("oldPass"), acc.getPassword())) {
-            return ResponseEntity.badRequest().body("Mật khẩu cũ sai");
+            throw new BadRequestException("Mật khẩu cũ không đúng");
         }
-        
-        accountService.changePassword(id, req.get("newPass")); // Gọi hàm service mới
-        return ResponseEntity.ok("Thành công");
+        accountService.changePassword(id, req.get("newPass"));
+        return ResponseEntity.ok("Ok");
     }
 }
 
