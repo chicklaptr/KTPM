@@ -596,6 +596,7 @@ function editBillingPeriod(id) {
 
 function saveBillingPeriod(event) {
   event.preventDefault();
+
   const period = {
     year: document.getElementById("periodYear").value,
     month: document.getElementById("periodMonth").value,
@@ -604,24 +605,48 @@ function saveBillingPeriod(event) {
     closed: document.getElementById("periodClosed").checked,
   };
 
-  const url = editingPeriodId
-    ? `/api/billing-periods/${editingPeriodId}`
-    : "/api/billing-periods";
-  const method = editingPeriodId ? "PUT" : "POST";
+  const isCreate = !editingPeriodId;
+
+  const url = isCreate
+    ? "/api/billing-periods"
+    : `/api/billing-periods/${editingPeriodId}`;
+
+  const method = isCreate ? "POST" : "PUT";
 
   fetch(url, {
     method: method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(period),
-  }).then((res) => {
-    if (res.ok) {
+  })
+    .then(async (res) => {
+      if (!res.ok) throw new Error("Lỗi khi lưu period");
+
+      // ⚠️ POST phải trả về BillingPeriod có id
+      return isCreate ? res.json() : null;
+    })
+    .then(async (createdPeriod) => {
+      if (isCreate && createdPeriod?.id) {
+        // 👉 GỌI GENERATE household_fee
+		console.log("createdPeriod=", createdPeriod);
+
+        await fetch(`/api/household-fees/generate/${createdPeriod.id}`, {
+          method: "POST",
+        });
+      }
+
       alert("Lưu thành công");
       document.getElementById("billingPeriodModal").style.display = "none";
+
       loadBillingPeriods();
-    } else {
+
+      // (không bắt buộc)
+      // loadStatistics();
+      // displayStatisticsByPeriod(createdPeriod.id);
+    })
+    .catch((err) => {
+      console.error(err);
       alert("Lỗi khi lưu");
-    }
-  });
+    });
 }
 
 function deleteBillingPeriod(id) {

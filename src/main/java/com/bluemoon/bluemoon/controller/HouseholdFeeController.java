@@ -46,7 +46,13 @@ public class HouseholdFeeController {
     	SessionGuard.requireAdmin(session);
         return ResponseEntity.ok(householdFeeService.create(fee));
     }
-
+    
+    @PostMapping("/generate/{periodId}")
+    public ResponseEntity<?> generate(@PathVariable Long periodId, HttpSession session) {
+        SessionGuard.requireAdmin(session);
+        return ResponseEntity.ok(householdFeeService.generateForPeriod(periodId));
+    }
+    
     @PutMapping("/{id}")
     public ResponseEntity<HouseholdFee> update( @PathVariable Long id,
     		@Valid @RequestBody HouseholdFee fee,HttpSession session) {

@@ -30,6 +30,8 @@ public class ResidentController {
 	 * if (residentId == null) { throw new UnauthorizedException("Not logged in"); }
 	 * //System.out.println("Resident ID from session: " + residentId); return
 	 * ResponseEntity.ok(residentService.getById(residentId)); }
+	 * 
+	 * 
 	 */
 	 
     

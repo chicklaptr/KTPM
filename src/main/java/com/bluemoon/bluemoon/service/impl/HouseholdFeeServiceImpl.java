@@ -13,6 +13,7 @@ import com.bluemoon.bluemoon.service.HouseholdFeeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -141,6 +142,7 @@ public class HouseholdFeeServiceImpl implements HouseholdFeeService {
                 if (Boolean.TRUE.equals(category.getFixedMonthly())) {
                     // phí cố định: có tiền ngay
                     fee.setAmount(category.getDefaultAmount());
+                    fee.setQuantity(BigDecimal.ONE);
                 } else {
                     // phí tự nhập: admin nhập sau
                     fee.setAmount(null);
