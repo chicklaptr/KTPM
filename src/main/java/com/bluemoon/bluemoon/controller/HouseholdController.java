@@ -2,6 +2,7 @@ package com.bluemoon.bluemoon.controller;
 
 import com.bluemoon.bluemoon.entity.Household;
 import com.bluemoon.bluemoon.entity.Resident;
+import com.bluemoon.bluemoon.exception.ResourceNotFoundException;
 import com.bluemoon.bluemoon.exception.UnauthorizedException;
 import com.bluemoon.bluemoon.service.HouseholdService;
 import com.bluemoon.bluemoon.service.ResidentService;
@@ -29,14 +30,20 @@ public class HouseholdController {
     @GetMapping("/me")
     public ResponseEntity<?> myHousehold(HttpSession session) {
         Long residentId = (Long) session.getAttribute("residentId");
-        if (residentId == null) throw new UnauthorizedException("Not logged in ");;
+        if (residentId == null) {
+            throw new UnauthorizedException("Not logged in");
+        }
 
         Resident r = residentService.getById(residentId);
-
+        
+        if (r.getHousehold() == null) {
+            throw new ResourceNotFoundException("Resident does not have a household");
+        }
       
         Long householdId = r.getHousehold().getId();
+        Household household = householdService.getById(householdId);
 
-        return ResponseEntity.ok(householdService.getById(householdId));
+        return ResponseEntity.ok(household);
     }
 
     @PostMapping

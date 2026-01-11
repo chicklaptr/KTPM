@@ -2,62 +2,254 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Chung cư Bluemoon - Đăng nhập</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chung cư Bluemoon - Hệ thống quản lý</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
+        * {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f0f2f5;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .welcome-container {
+            width: 100%;
+            max-width: 500px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .center-box {
-            width: 400px;
-            margin: 100px auto;
-            padding: 30px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 50px 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        input, button {
-            width: 90%;
-            padding: 12px;
-            margin: 10px 0;
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
         }
 
-        button {
-            background: #3b7ddd;
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        h1 {
+            color: #1e293b;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 16px;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px 24px;
             border: none;
-            color: white;
-            border-radius: 5px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            color: white;
+            position: relative;
+            overflow: hidden;
         }
 
-        button:hover {
-            background: #2d63b8;
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
         }
 
-        .back-btn {
-            background: #777;
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
-        .hidden {
-            display: none;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-user {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-icon {
+            font-size: 20px;
+        }
+
+        .features {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .features-title {
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .feature-item {
+            padding: 15px;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .feature-text {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .center-box {
+                padding: 40px 30px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .logo {
+                font-size: 40px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
+    <div class="welcome-container">
+        <div class="center-box">
+            <div class="logo">🏢</div>
+            <h1>Chung cư Bluemoon</h1>
+            <p class="subtitle">Hệ thống quản lý chung cư thông minh</p>
+            
+            <div class="button-group">
+                <a href="/login-user.html" class="btn btn-user">
+                    <span class="btn-icon">👤</span>
+                    <span>Đăng nhập cư dân</span>
+                </a>
+                <a href="/login-admin.html" class="btn btn-admin">
+                    <span class="btn-icon">👨‍💼</span>
+                    <span>Đăng nhập ban quản lý</span>
+                </a>
+            </div>
 
-<!-- ========== MÀN HÌNH CHỌN LOẠI ĐĂNG NHẬP ========== -->
-<div id="welcome" class="center-box">
-    <h2>Chào mừng đến Chung cư Bluemoon</h2>
-    <button onclick="window.location.href='/login-user.html'">Đăng nhập người dân</button>
-	<button onclick="window.location.href='/login-admin.html'">Đăng nhập ban quản lý</button>
-
-</div>
-
+            <div class="features">
+                <div class="features-title">Tính năng nổi bật</div>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <div class="feature-icon">💰</div>
+                        <div class="feature-text">Quản lý phí</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-text">Thống kê</div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🏠</div>
+                        <div class="feature-text">Quản lý hộ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

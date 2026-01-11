@@ -5,10 +5,11 @@ import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "payment")
-
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Payment {
 
     @Id
@@ -18,6 +19,7 @@ public class Payment {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "household_fee_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private HouseholdFee householdFee;
 
     

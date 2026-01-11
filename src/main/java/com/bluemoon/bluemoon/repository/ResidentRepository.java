@@ -9,6 +9,8 @@ import java.util.List;
 public interface ResidentRepository extends JpaRepository<Resident, Long> {
 
     List<Resident> findByHousehold(Household household);
+    
+    List<Resident> findByHouseholdId(Long householdId);
 
     List<Resident> findByResidenceStatus(String residenceStatus);
 }

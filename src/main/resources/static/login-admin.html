@@ -2,78 +2,266 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Đăng nhập ban quản lý</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập ban quản lý - Chung cư Bluemoon</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #fbe9e7;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background-attachment: fixed;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
+            padding: 20px;
         }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .login-box {
-            background: white;
-            width: 350px;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 0 12px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 45px 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        h2 {
+
+        .login-header {
             text-align: center;
-            margin-bottom: 15px;
-            color: #d84315;
+            margin-bottom: 35px;
         }
+
+        .login-icon {
+            font-size: 56px;
+            margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        h2 {
+            color: #1e293b;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .login-subtitle {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        .error-msg {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 1px solid #fecaca;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #1e293b;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
         input {
             width: 100%;
-            padding: 12px;
-            margin-top: 8px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: #fff;
+            font-family: 'Inter', sans-serif;
         }
+
+        input:focus {
+            outline: none;
+            border-color: #f5576c;
+            box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.1);
+            transform: translateY(-1px);
+        }
+
+        input:hover {
+            border-color: #cbd5e1;
+        }
+
         button {
-            margin-top: 15px;
             width: 100%;
-            background: #d84315;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             border: none;
             color: white;
-            padding: 12px;
-            border-radius: 6px;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
         }
+
         button:hover {
-            background: #bf360c;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.5);
         }
+
+        button:active {
+            transform: translateY(0);
+        }
+
         .link {
             text-align: center;
-            margin-top: 12px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
         }
+
         .link a {
-            color: #d84315;
+            color: #f5576c;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .link a:hover {
+            color: #f093fb;
+            text-decoration: underline;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-size: 32px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-link a:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 35px 25px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            .login-icon {
+                font-size: 48px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="login-box">
-    <h2>Đăng nhập ban quản lý</h2>
-<div id="error-msg" style="color:red; text-align:center; margin-bottom:10px;"></div>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="login-icon">👨‍💼</div>
+                <h2>Đăng nhập ban quản lý</h2>
+                <p class="login-subtitle">Quản lý hệ thống chung cư</p>
+            </div>
 
-    <form action="/api/auth/admin-login" method="POST">
+            <div id="error-msg" class="error-msg" style="display: none;"></div>
 
-        <label>Tên đăng nhập</label>
-        <input type="text" name="username" required>
+            <form action="/api/auth/admin-login" method="POST">
+                <div class="form-group">
+                    <label for="username">Tên đăng nhập</label>
+                    <input type="text" id="username" name="username" required autocomplete="username" placeholder="Nhập tên đăng nhập">
+                </div>
 
-        <label>Mật khẩu</label>
-        <input type="password" name="password" required>
+                <div class="form-group">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Nhập mật khẩu">
+                </div>
 
-        <button type="submit">Đăng nhập</button>
+                <button type="submit">Đăng nhập</button>
 
-        <div class="link">
-            <a href="/login-user.html">Đăng nhập cư dân</a>
+                <div class="link">
+                    <a href="/login-user.html">Đăng nhập cư dân</a>
+                </div>
+            </form>
+
+            <div class="back-link">
+                <a href="/" title="Về trang chủ">
+                    🏠
+                </a>
+            </div>
         </div>
-    </form>
-</div>
+    </div>
 </body>
 <script>
     const params = new URLSearchParams(window.location.search);
@@ -83,10 +271,13 @@
 
     if (error === "password") {
         msgDiv.innerText = "❌ Mật khẩu không đúng";
+        msgDiv.style.display = "block";
     } else if (error === "notfound") {
         msgDiv.innerText = "❌ Tài khoản không tồn tại";
+        msgDiv.style.display = "block";
     } else if (error === "role") {
         msgDiv.innerText = "❌ Bạn không có quyền truy cập";
+        msgDiv.style.display = "block";
     }
 </script>
 </html>

@@ -6,114 +6,231 @@
     <!-- Libraries for Excel and PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Chart.js for beautiful charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Chart.js datalabels plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+      * {
+        box-sizing: border-box;
+      }
       body {
         margin: 0;
-        font-family: Arial, sans-serif;
-        background: #f3f5f7;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-attachment: fixed;
+        min-height: 100vh;
       }
       .sidebar {
-        width: 250px;
+        width: 280px;
         height: 100vh;
-        background: #2c3e50;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
         color: white;
         position: fixed;
-        padding-top: 20px;
+        padding-top: 30px;
         overflow-y: auto;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        transition: transform 0.3s ease;
+      }
+      .sidebar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .sidebar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
       }
       .sidebar h2 {
         text-align: center;
-        margin-bottom: 30px;
-        font-size: 18px;
+        margin-bottom: 40px;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 0 20px;
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       }
       .sidebar a {
-        display: block;
-        padding: 15px 20px;
-        color: white;
+        display: flex;
+        align-items: center;
+        padding: 16px 24px;
+        color: rgba(255, 255, 255, 0.9);
         text-decoration: none;
-        border-bottom: 1px solid #1a252f;
         cursor: pointer;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+        font-weight: 500;
+        font-size: 15px;
       }
       .sidebar a:hover {
-        background: #34495e;
+        background: rgba(255, 255, 255, 0.1);
+        border-left-color: #667eea;
+        padding-left: 28px;
+        color: #fff;
+      }
+      .sidebar a[style*="color: #e74c3c"] {
+        color: #f87171 !important;
+        margin-top: 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 20px;
+      }
+      .sidebar a[style*="color: #e74c3c"]:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-left-color: #ef4444;
       }
       .content {
-        margin-left: 260px;
-        padding: 20px;
+        margin-left: 280px;
+        padding: 30px;
+        min-height: 100vh;
       }
       .section {
         display: none;
+        animation: fadeIn 0.3s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
       .active {
         display: block;
+      }
+      h2 {
+        color: #1e293b;
+        font-weight: 700;
+        font-size: 28px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
       table {
         width: 100%;
         border-collapse: collapse;
         background: white;
         margin-top: 20px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       }
       th,
       td {
-        padding: 12px;
-        border: 1px solid #ccc;
+        padding: 16px;
+        border: none;
         text-align: left;
       }
       th {
-        background: #3498db;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      tbody tr:hover {
+        background: #f8fafc;
+        transform: scale(1.01);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+      tbody tr:last-child {
+        border-bottom: none;
       }
       .btn {
-        padding: 8px 16px;
+        padding: 12px 24px;
         border: none;
-        background: #3498db;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         cursor: pointer;
-        border-radius: 4px;
-        margin: 2px;
+        border-radius: 8px;
+        margin: 4px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
       }
       .btn:hover {
-        background: #2980b9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px -1px rgba(102, 126, 234, 0.4);
+      }
+      .btn:active {
+        transform: translateY(0);
       }
       .btn-danger {
-        background: #e74c3c;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
       }
       .btn-danger:hover {
-        background: #c0392b;
+        box-shadow: 0 6px 12px -1px rgba(239, 68, 68, 0.4);
       }
       .btn-success {
-        background: #27ae60;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
       }
       .btn-success:hover {
-        background: #229954;
+        box-shadow: 0 6px 12px -1px rgba(16, 185, 129, 0.4);
       }
 
       /* Modal styles */
       .modal {
         display: none;
         position: fixed;
-        z-index: 1000;
+        z-index: 2000;
         left: 0;
         top: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
         overflow-y: auto;
+        animation: fadeIn 0.3s ease;
       }
       .modal-content {
-        background-color: #fefefe;
+        background-color: #ffffff;
         margin: 50px auto;
-        padding: 30px;
-        border: 1px solid #888;
+        padding: 40px;
+        border: none;
         width: 90%;
         max-width: 700px;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         position: relative;
         top: 50%;
         transform: translateY(-50%);
         max-height: 90vh;
         overflow-y: auto;
+        animation: slideUp 0.3s ease;
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(-50%) translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(-50%) translateY(0);
+        }
       }
       @media (max-height: 700px) {
         .modal-content {
@@ -143,17 +260,25 @@
       .form-group input,
       .form-group select {
         width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
         box-sizing: border-box;
         font-size: 14px;
+        transition: all 0.3s ease;
+        background: #fff;
+        font-family: 'Inter', sans-serif;
       }
       .form-group input:focus,
       .form-group select:focus {
         outline: none;
-        border-color: #3498db;
-        box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-1px);
+      }
+      .form-group input:hover,
+      .form-group select:hover {
+        border-color: #cbd5e1;
       }
       .form-group input[type="checkbox"] {
         width: auto;
@@ -170,13 +295,121 @@
         border-color: #e74c3c;
       }
       .search-box {
-        margin-bottom: 15px;
+        margin-bottom: 20px;
       }
       .search-box input {
-        padding: 8px;
-        width: 300px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+        padding: 12px 16px;
+        width: 100%;
+        max-width: 400px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+      .search-box input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+      .search-box input::placeholder {
+        color: #94a3b8;
+      }
+      
+      /* Icon Buttons */
+      .btn-icon {
+        padding: 6px 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .btn-icon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+      .btn-icon:active {
+        transform: translateY(0);
+      }
+      .btn-view {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+      }
+      .btn-view:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      }
+      .btn-edit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      .btn-edit:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      }
+      .btn-delete {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+      }
+      .btn-delete:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      }
+      
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+          width: 260px;
+        }
+        .sidebar.active {
+          transform: translateX(0);
+        }
+        .content {
+          margin-left: 0;
+          padding: 20px 15px;
+        }
+        h2 {
+          font-size: 24px;
+        }
+        table {
+          font-size: 14px;
+        }
+        th, td {
+          padding: 10px 8px;
+        }
+        .btn {
+          padding: 10px 16px;
+          font-size: 13px;
+        }
+        .modal-content {
+          width: 95%;
+          padding: 25px;
+          margin: 20px auto;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .content {
+          padding: 15px 10px;
+        }
+        h2 {
+          font-size: 20px;
+        }
+        table {
+          font-size: 12px;
+        }
+        th, td {
+          padding: 8px 6px;
+        }
+        .search-box input {
+          max-width: 100%;
+        }
       }
     </style>
   </head>
@@ -198,7 +431,7 @@
     <div class="content">
       <!-- Hộ dân -->
       <div id="households" class="section active">
-        <h2>Danh sách hộ dân</h2>
+        <h2>🏠 Danh sách hộ dân</h2>
         <button class="btn btn-success" onclick="openHouseholdForm()">
           + Thêm hộ dân
         </button>
@@ -233,7 +466,7 @@
 
       <!-- Loại phí -->
       <div id="fee-categories" class="section">
-        <h2>Quản lý loại phí</h2>
+        <h2>💰 Quản lý loại phí</h2>
         <button class="btn btn-success" onclick="openFeeCategoryForm()">
           + Thêm loại phí mới
         </button>
@@ -269,12 +502,12 @@
 
       <!-- Thống kê -->
       <div id="cost-stats" class="section">
-        <h2>Thống kê chi phí toàn bộ tòa nhà</h2>
+        <h2>📊 Thống kê chi phí toàn bộ tòa nhà</h2>
         <div style="margin-bottom: 20px">
           <label>Chọn kỳ thu phí: </label>
           <select
             id="statsPeriodSelect"
-            onchange="loadStatistics()"
+            onchange="onPeriodSelectChange()"
             style="
               padding: 8px;
               margin-left: 10px;
@@ -286,10 +519,10 @@
           </select>
           <button
             class="btn"
-            onclick="loadStatistics()"
+            onclick="refreshStatistics()"
             style="margin-left: 10px"
           >
-            Tải lại
+            🔄 Tải lại
           </button>
         </div>
         <div id="costStatsContent">
@@ -299,7 +532,7 @@
 
       <!-- Hóa đơn -->
       <div id="billing" class="section">
-        <h2>Quản lý hóa đơn tháng</h2>
+        <h2>🧾 Quản lý hóa đơn tháng</h2>
         <button class="btn btn-success" onclick="openBillingPeriodForm()">
           + Tạo kỳ thu phí mới
         </button>
@@ -324,7 +557,7 @@
 
       <!-- Tài khoản -->
       <div id="accounts" class="section">
-        <h2>Quản lý tài khoản cư dân</h2>
+        <h2>👥 Quản lý tài khoản cư dân</h2>
         <button class="btn btn-success" onclick="openAccountForm()">
           + Tạo tài khoản mới
         </button>
@@ -371,7 +604,7 @@
 
       <!-- Báo cáo -->
       <div id="reports" class="section">
-        <h2>Xem báo cáo</h2>
+        <h2>📑 Xem báo cáo</h2>
         <div id="reportsContent">
           <p>Đang tải...</p>
         </div>
@@ -379,14 +612,14 @@
 
       <!-- Thông tin tài khoản -->
       <div id="my-account" class="section">
-        <h2>Thông tin tài khoản của bạn</h2>
+        <h2>👤 Thông tin tài khoản của bạn</h2>
 
         <div
           style="
             background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             max-width: 600px;
           "
         >
@@ -509,6 +742,18 @@
               <input type="checkbox" id="householdActive" checked /> Hoạt động
             </label>
           </div>
+
+          <!-- Quản lý cư dân (chỉ hiển thị khi sửa) -->
+          <div id="residentsSection" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
+            <h3 style="color: #1e293b; margin-bottom: 15px; font-size: 18px;">👥 Quản lý cư dân trong hộ</h3>
+            <button type="button" class="btn btn-success" onclick="addResidentRow()" style="margin-bottom: 15px;">
+              + Thêm cư dân
+            </button>
+            <div id="residentsList" style="max-height: 400px; overflow-y: auto;">
+              <!-- Danh sách cư dân sẽ được thêm vào đây -->
+            </div>
+          </div>
+
           <button type="submit" class="btn btn-success">Lưu</button>
           <button
             type="button"
@@ -849,6 +1094,23 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal: Household Details -->
+    <div id="householdDetailsModal" class="modal">
+      <div class="modal-content" style="max-width: 900px;">
+        <span class="close" onclick="closeModal('householdDetailsModal')"
+          >&times;</span
+        >
+        <h2 id="householdDetailsTitle">Chi tiết hộ gia đình</h2>
+        <div id="householdDetailsContent">
+          <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 10px;">⏳</div>
+            <p>Đang tải thông tin...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="/money-utils.js"></script>
     <script src="/admin.js"></script>
   </body>

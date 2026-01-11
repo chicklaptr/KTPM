@@ -1,11 +1,9 @@
 package com.bluemoon.bluemoon.controller;
-import com.bluemoon.bluemoon.entity.Account;
 import com.bluemoon.bluemoon.entity.Resident;
 import com.bluemoon.bluemoon.exception.ResourceNotFoundException;
 import com.bluemoon.bluemoon.exception.UnauthorizedException;
 import com.bluemoon.bluemoon.entity.HouseholdFee;
 import com.bluemoon.bluemoon.entity.Payment;
-import com.bluemoon.bluemoon.repository.AccountRepository;
 import com.bluemoon.bluemoon.repository.ResidentRepository;
 import com.bluemoon.bluemoon.repository.HouseholdFeeRepository;
 import com.bluemoon.bluemoon.repository.PaymentRepository;
@@ -64,9 +62,15 @@ public class UserPortalController {
 		return ResponseEntity.ok(payments);	
 	}
 	
-	
-	
-	
-	
+	@GetMapping("/family")
+	public ResponseEntity<List<Resident>> getMyFamily(HttpSession session){
+		Resident resident = getLoggedInResident(session);
+		if(resident.getHousehold()==null) {
+			return ResponseEntity.notFound().build();
+		}
+		Long householdId = resident.getHousehold().getId();
+		List<Resident> family = residentRepository.findByHouseholdId(householdId);
+		return ResponseEntity.ok(family);
+	}
 
 }
