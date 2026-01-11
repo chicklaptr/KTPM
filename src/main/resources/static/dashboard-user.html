@@ -465,9 +465,28 @@
                 </div>
             </div>
         </div>
-        <div class="search-box">
-            <input type="text" id="searchFees" placeholder="Tìm kiếm theo kỳ thu phí, loại phí..." onkeyup="filterFees()">
+        <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; padding: 15px; background: white; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+            <div style="display: flex; align-items: center; gap: 10px; min-width: 250px;">
+                <label for="feePeriodSelect" style="color: #667eea; font-weight: 600; font-size: 14px; white-space: nowrap;">📅 Chọn kỳ thu phí:</label>
+                <select id="feePeriodSelect" onchange="filterFees()" style="flex: 1; padding: 10px 14px; padding-right: 40px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; background: white; color: #1e293b; transition: all 0.3s ease; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"%23667eea\"><path d=\"M7 10l5 5 5-5z\"/></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px;">
+                    <option value="">-- Tất cả các kỳ --</option>
+                </select>
+            </div>
+            <div class="search-box" style="flex: 1; min-width: 200px; margin: 0;">
+                <input type="text" id="searchFees" placeholder="🔍 Tìm kiếm theo kỳ thu phí, loại phí..." onkeyup="filterFees()" style="width: 100%;">
+            </div>
         </div>
+        <style>
+            #feePeriodSelect:hover {
+                border-color: #667eea !important;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+            }
+            #feePeriodSelect:focus {
+                outline: none;
+                border-color: #667eea !important;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15) !important;
+            }
+        </style>
         <div style="overflow-x: auto;">
             <table>
                 <thead>
@@ -491,9 +510,28 @@
     <!-- HISTORY -->
     <div id="history" class="section">
         <h2>📜 Lịch sử thanh toán</h2>
-        <div class="search-box">
-            <input type="text" id="searchHistory" placeholder="Tìm kiếm theo loại phí, phương thức..." onkeyup="filterHistory()">
+        <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; padding: 15px; background: white; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+            <div style="display: flex; align-items: center; gap: 10px; min-width: 250px;">
+                <label for="historyPeriodSelect" style="color: #667eea; font-weight: 600; font-size: 14px; white-space: nowrap;">📅 Chọn kỳ thu phí:</label>
+                <select id="historyPeriodSelect" onchange="filterHistory()" style="flex: 1; padding: 10px 14px; padding-right: 40px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; background: white; color: #1e293b; transition: all 0.3s ease; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"%23667eea\"><path d=\"M7 10l5 5 5-5z\"/></svg>'); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px;">
+                    <option value="">-- Tất cả các kỳ --</option>
+                </select>
+            </div>
+            <div class="search-box" style="flex: 1; min-width: 200px; margin: 0;">
+                <input type="text" id="searchHistory" placeholder="🔍 Tìm kiếm theo loại phí, phương thức..." onkeyup="filterHistory()" style="width: 100%;">
+            </div>
         </div>
+        <style>
+            #historyPeriodSelect:hover {
+                border-color: #667eea !important;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+            }
+            #historyPeriodSelect:focus {
+                outline: none;
+                border-color: #667eea !important;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15) !important;
+            }
+        </style>
         <div style="overflow-x: auto;">
             <table>
                 <thead>

@@ -31,8 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("profile")) {
     loadUserInfo();
     loadHouseholdInfo();
-    loadHouseholdFees();
-    loadPaymentHistory();
+    loadPeriods().then(() => {
+      loadHouseholdFees();
+      loadPaymentHistory();
+    });
   }
 });
 
@@ -110,7 +112,18 @@ function loadHouseholdInfo() {
       if (aptEl) aptEl.innerText = h.apartmentNumber || "-";
       if (phoneEl) phoneEl.innerText = h.phone || "-";
       if (membersEl) membersEl.innerText = h.membersCount || "-";
-      if (statusEl) statusEl.innerText = h.residenceStatus || "-";
+      if (statusEl) {
+        // Mapping residence status từ database sang tiếng Việt
+        const statusMapping = {
+          'DANG_O': 'Đang ở',
+          'DA_CHUYEN': 'Đã chuyển',
+          'TAM_VANG': 'Tạm vắng',
+          'Active': 'Hoạt động',
+          'Inactive': 'Ngừng hoạt động'
+        };
+        const displayStatus = statusMapping[h.residenceStatus] || h.residenceStatus || "-";
+        statusEl.innerText = displayStatus;
+      }
       if (moveInEl) {
         moveInEl.innerText = h.moveInDate ? 
           new Date(h.moveInDate).toLocaleDateString('vi-VN') : "-";
@@ -239,6 +252,67 @@ function displayFamilyMembers(family) {
 // Lưu trữ dữ liệu để filter
 let allFees = [];
 let allPayments = [];
+let allBillingPeriods = [];
+
+/* ==================================================
+	   LOAD BILLING PERIODS
+	================================================== */
+function loadPeriods() {
+  return fetch("/api/billing-periods", {
+    credentials: 'same-origin'
+  })
+    .then((res) => {
+      if (!res.ok) {
+        console.warn("Error loading periods:", res.status, res.statusText);
+        return [];
+      }
+      return res.json().then(data => {
+        if (!Array.isArray(data)) {
+          console.warn("Periods response is not an array:", data);
+          return [];
+        }
+        return data;
+      });
+    })
+    .catch(err => {
+      console.error("Error loading periods:", err);
+      return [];
+    })
+    .then((periods) => {
+      allBillingPeriods = periods;
+      
+      // Sắp xếp kỳ mới nhất lên đầu
+      periods.sort((a, b) => b.year - a.year || b.month - a.month);
+      
+      // Populate dropdown cho Fees
+      const feeSelect = document.getElementById("feePeriodSelect");
+      if (feeSelect) {
+        const currentValue = feeSelect.value;
+        feeSelect.innerHTML = '<option value="">-- Tất cả các kỳ --</option>';
+        periods.forEach((p) => {
+          const periodLabel = `Tháng ${String(p.month).padStart(2, '0')}/${p.year}`;
+          feeSelect.innerHTML += `<option value="${p.id}">${periodLabel}</option>`;
+        });
+        if (currentValue) {
+          feeSelect.value = currentValue;
+        }
+      }
+      
+      // Populate dropdown cho History
+      const historySelect = document.getElementById("historyPeriodSelect");
+      if (historySelect) {
+        const currentValue = historySelect.value;
+        historySelect.innerHTML = '<option value="">-- Tất cả các kỳ --</option>';
+        periods.forEach((p) => {
+          const periodLabel = `Tháng ${String(p.month).padStart(2, '0')}/${p.year}`;
+          historySelect.innerHTML += `<option value="${p.id}">${periodLabel}</option>`;
+        });
+        if (currentValue) {
+          historySelect.value = currentValue;
+        }
+      }
+    });
+}
 
 /* ==================================================
 	   HOUSEHOLD FEES
@@ -259,7 +333,12 @@ function loadHouseholdFees() {
     }).catch(() => [])
   ])
     .then(([fees, payments]) => {
-      allFees = fees;
+      // Lọc chỉ lấy các phí có feeCategory.active === true
+      const activeFees = fees.filter(fee => {
+        return fee.feeCategory && fee.feeCategory.active === true;
+      });
+      
+      allFees = activeFees;
       allPayments = payments;
       
       // Tạo map tổng đã trả theo household_fee_id
@@ -274,12 +353,12 @@ function loadHouseholdFees() {
         }
       });
       
-      // Tính tổng thống kê
+      // Tính tổng thống kê chỉ từ các phí active
       let totalDue = 0;
       let totalPaid = 0;
       let totalRemaining = 0;
       
-      fees.forEach(fee => {
+      activeFees.forEach(fee => {
         const feeAmount = parseFloat(fee.amount) || 0;
         const paidAmount = paidAmountByFeeId[fee.id] || 0;
         totalDue += feeAmount;
@@ -290,7 +369,7 @@ function loadHouseholdFees() {
       // Hiển thị tổng quan
       const summaryDiv = document.getElementById("feesSummary");
       if (summaryDiv) {
-        summaryDiv.style.display = fees.length > 0 ? "block" : "none";
+        summaryDiv.style.display = activeFees.length > 0 ? "block" : "none";
         document.getElementById("totalDue").textContent = totalDue.toLocaleString('vi-VN') + "đ";
         document.getElementById("totalPaid").textContent = totalPaid.toLocaleString('vi-VN') + "đ";
         document.getElementById("totalRemaining").textContent = totalRemaining.toLocaleString('vi-VN') + "đ";
@@ -299,7 +378,7 @@ function loadHouseholdFees() {
       const tbody = document.getElementById("feeTable");
       tbody.innerHTML = "";
 
-      if (fees.length === 0) {
+      if (activeFees.length === 0) {
         tbody.innerHTML = `
           <tr>
             <td colspan="9" style="text-align:center">
@@ -310,7 +389,7 @@ function loadHouseholdFees() {
       }
 
       // Sắp xếp theo kỳ thu phí (mới nhất trước)
-      fees.sort((a, b) => {
+      activeFees.sort((a, b) => {
         const periodA = a.billingPeriod;
         const periodB = b.billingPeriod;
         if (periodA && periodB) {
@@ -320,7 +399,7 @@ function loadHouseholdFees() {
         return (b.id || 0) - (a.id || 0);
       });
 
-      fees.forEach((fee) => {
+      activeFees.forEach((fee) => {
         const feeAmount = parseFloat(fee.amount) || 0;
         const paidAmount = paidAmountByFeeId[fee.id] || 0;
         const remainingAmount = feeAmount - paidAmount;
@@ -341,14 +420,15 @@ function loadHouseholdFees() {
           statusText = "Chờ thanh toán";
         }
         
-        const period = fee.billingPeriod ? `Tháng ${fee.billingPeriod.month}/${fee.billingPeriod.year}` : "-";
+        const period = fee.billingPeriod ? `Tháng ${String(fee.billingPeriod.month).padStart(2, '0')}/${fee.billingPeriod.year}` : "-";
+        const periodId = fee.billingPeriod ? fee.billingPeriod.id : null;
         const category = fee.feeCategory ? fee.feeCategory.name : "-";
         const quantity = fee.quantity ? parseFloat(fee.quantity).toLocaleString('vi-VN') : "-";
         const unitPrice = fee.unitPrice ? parseFloat(fee.unitPrice).toLocaleString('vi-VN') + "đ" : "-";
         const dueDate = fee.dueDate ? new Date(fee.dueDate).toLocaleDateString('vi-VN') : "-";
         
         tbody.innerHTML += `
-          <tr>
+          <tr data-period-id="${periodId || ''}">
             <td>${period}</td>
             <td><strong>${category}</strong></td>
             <td style="text-align: right;">${quantity}</td>
@@ -414,15 +494,16 @@ function loadPaymentHistory() {
 
       data.forEach((p) => {
         const paidDate = p.paidAt ? new Date(p.paidAt).toLocaleString('vi-VN') : "-";
+        const periodId = p.householdFee?.billingPeriod ? p.householdFee.billingPeriod.id : null;
         const period = p.householdFee?.billingPeriod ? 
-          `Tháng ${p.householdFee.billingPeriod.month}/${p.householdFee.billingPeriod.year}` : "-";
+          `Tháng ${String(p.householdFee.billingPeriod.month).padStart(2, '0')}/${p.householdFee.billingPeriod.year}` : "-";
         const category = p.householdFee?.feeCategory ? p.householdFee.feeCategory.name : "-";
         const amount = p.amount ? parseFloat(p.amount).toLocaleString('vi-VN') + "đ" : "0đ";
         const method = p.method || "-";
         const note = p.note || "-";
         
         tbody.innerHTML += `
-          <tr>
+          <tr data-period-id="${periodId || ''}">
             <td>${paidDate}</td>
             <td>${period}</td>
             <td><strong>${category}</strong></td>
@@ -449,30 +530,97 @@ function loadPaymentHistory() {
 	================================================== */
 function filterFees() {
   const searchTerm = document.getElementById("searchFees")?.value.toLowerCase() || "";
+  const selectedPeriodId = document.getElementById("feePeriodSelect")?.value || "";
   const rows = document.querySelectorAll("#feeTable tr");
   
   rows.forEach(row => {
     const text = row.textContent.toLowerCase();
-    if (text.includes(searchTerm)) {
-      row.style.display = "";
-    } else {
-      row.style.display = "none";
+    let showRow = true;
+    
+    // Filter theo search term
+    if (searchTerm && !text.includes(searchTerm)) {
+      showRow = false;
     }
+    
+    // Filter theo period (sử dụng data-period-id attribute)
+    if (selectedPeriodId && showRow) {
+      const rowPeriodId = row.getAttribute("data-period-id");
+      if (rowPeriodId !== selectedPeriodId) {
+        showRow = false;
+      }
+    }
+    
+    row.style.display = showRow ? "" : "none";
   });
+  
+  // Cập nhật thống kê dựa trên filtered fees
+  updateFeesSummary();
 }
 
 function filterHistory() {
   const searchTerm = document.getElementById("searchHistory")?.value.toLowerCase() || "";
+  const selectedPeriodId = document.getElementById("historyPeriodSelect")?.value || "";
   const rows = document.querySelectorAll("#historyTable tr");
   
   rows.forEach(row => {
     const text = row.textContent.toLowerCase();
-    if (text.includes(searchTerm)) {
-      row.style.display = "";
-    } else {
-      row.style.display = "none";
+    let showRow = true;
+    
+    // Filter theo search term
+    if (searchTerm && !text.includes(searchTerm)) {
+      showRow = false;
+    }
+    
+    // Filter theo period (sử dụng data-period-id attribute)
+    if (selectedPeriodId && showRow) {
+      const rowPeriodId = row.getAttribute("data-period-id");
+      if (rowPeriodId !== selectedPeriodId) {
+        showRow = false;
+      }
+    }
+    
+    row.style.display = showRow ? "" : "none";
+  });
+}
+
+// Cập nhật thống kê dựa trên filtered fees
+function updateFeesSummary() {
+  const visibleRows = document.querySelectorAll("#feeTable tr[style='']");
+  let totalDue = 0;
+  let totalPaid = 0;
+  let totalRemaining = 0;
+  
+  visibleRows.forEach(row => {
+    const cells = row.querySelectorAll("td");
+    if (cells.length >= 7) {
+      // Cột "Phải trả" (index 4)
+      const dueText = cells[4].textContent.replace(/[^\d]/g, '');
+      const due = parseFloat(dueText) || 0;
+      
+      // Cột "Đã trả" (index 5)
+      const paidText = cells[5].textContent.replace(/[^\d]/g, '');
+      const paid = parseFloat(paidText) || 0;
+      
+      // Cột "Còn lại" (index 6)
+      const remainingText = cells[6].textContent.replace(/[^\d]/g, '');
+      const remaining = parseFloat(remainingText) || 0;
+      
+      totalDue += due;
+      totalPaid += paid;
+      totalRemaining += remaining;
     }
   });
+  
+  // Cập nhật summary
+  const summaryDiv = document.getElementById("feesSummary");
+  if (summaryDiv && visibleRows.length > 0) {
+    summaryDiv.style.display = "block";
+    document.getElementById("totalDue").textContent = totalDue.toLocaleString('vi-VN') + "đ";
+    document.getElementById("totalPaid").textContent = totalPaid.toLocaleString('vi-VN') + "đ";
+    document.getElementById("totalRemaining").textContent = totalRemaining.toLocaleString('vi-VN') + "đ";
+  } else if (summaryDiv) {
+    summaryDiv.style.display = "none";
+  }
 }
 
 /* ==================================================
@@ -567,9 +715,21 @@ function show(id) {
     
     // Reload data khi chuyển section
     if (id === "fees") {
-      loadHouseholdFees();
+      if (allBillingPeriods.length === 0) {
+        loadPeriods().then(() => {
+          loadHouseholdFees();
+        });
+      } else {
+        loadHouseholdFees();
+      }
     } else if (id === "history") {
-      loadPaymentHistory();
+      if (allBillingPeriods.length === 0) {
+        loadPeriods().then(() => {
+          loadPaymentHistory();
+        });
+      } else {
+        loadPaymentHistory();
+      }
     }
   }
 }
