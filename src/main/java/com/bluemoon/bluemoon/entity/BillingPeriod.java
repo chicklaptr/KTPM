@@ -2,13 +2,13 @@ package com.bluemoon.bluemoon.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import  java.time.LocalDate;
 
 @Entity
 @Table(name = "billing_period")
-
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class BillingPeriod {
 
     @Id

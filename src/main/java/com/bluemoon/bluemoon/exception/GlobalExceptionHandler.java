@@ -23,6 +23,12 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(409, ex.getMessage()));
 	}
 	
+	@ExceptionHandler(UnauthorizedException.class)
+	public ResponseEntity<ApiError> handleUnauthorized(UnauthorizedException ex) {
+		ApiError err = new ApiError(401, ex.getMessage());	
+	    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(err);
+	}
+	
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<ApiError> handleDataIntegrityViolationException(DataIntegrityViolationException ex){
 		String message = "Dữ liệu không hợp lệ";

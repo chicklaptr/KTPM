@@ -1,588 +1,1117 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Admin Dashboard - Chung cư Bluemoon</title>
     <!-- Libraries for Excel and PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Chart.js for beautiful charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Chart.js datalabels plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f3f5f7;
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-attachment: fixed;
+        min-height: 100vh;
+      }
+      .sidebar {
+        width: 280px;
+        height: 100vh;
+        background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        color: white;
+        position: fixed;
+        padding-top: 30px;
+        overflow-y: auto;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        transition: transform 0.3s ease;
+      }
+      .sidebar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .sidebar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .sidebar::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+      }
+      .sidebar h2 {
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 0 20px;
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+      .sidebar a {
+        display: flex;
+        align-items: center;
+        padding: 16px 24px;
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+        font-weight: 500;
+        font-size: 15px;
+      }
+      .sidebar a:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-left-color: #667eea;
+        padding-left: 28px;
+        color: #fff;
+      }
+      .sidebar a[style*="color: #e74c3c"] {
+        color: #f87171 !important;
+        margin-top: 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 20px;
+      }
+      .sidebar a[style*="color: #e74c3c"]:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-left-color: #ef4444;
+      }
+      .content {
+        margin-left: 280px;
+        padding: 30px;
+        min-height: 100vh;
+      }
+      .section {
+        display: none;
+        animation: fadeIn 0.3s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
         }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .active {
+        display: block;
+      }
+      h2 {
+        color: #1e293b;
+        font-weight: 700;
+        font-size: 28px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        margin-top: 20px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      th,
+      td {
+        padding: 16px;
+        border: none;
+        text-align: left;
+      }
+      th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      tbody tr:hover {
+        background: #f8fafc;
+        transform: scale(1.01);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        cursor: pointer;
+        border-radius: 8px;
+        margin: 4px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px -1px rgba(102, 126, 234, 0.4);
+      }
+      .btn:active {
+        transform: translateY(0);
+      }
+      .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+      }
+      .btn-danger:hover {
+        box-shadow: 0 6px 12px -1px rgba(239, 68, 68, 0.4);
+      }
+      .btn-success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+      }
+      .btn-success:hover {
+        box-shadow: 0 6px 12px -1px rgba(16, 185, 129, 0.4);
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        overflow-y: auto;
+        animation: fadeIn 0.3s ease;
+      }
+      .modal-content {
+        background-color: #ffffff;
+        margin: 50px auto;
+        padding: 40px;
+        border: none;
+        width: 90%;
+        max-width: 700px;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: slideUp 0.3s ease;
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(-50%) translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(-50%) translateY(0);
+        }
+      }
+      @media (max-height: 700px) {
+        .modal-content {
+          top: 0;
+          transform: none;
+          margin: 20px auto;
+        }
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .close:hover {
+        color: black;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: #fff;
+        font-family: 'Inter', sans-serif;
+      }
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        transform: translateY(-1px);
+      }
+      .form-group input:hover,
+      .form-group select:hover {
+        border-color: #cbd5e1;
+      }
+      .form-group input[type="checkbox"] {
+        width: auto;
+        margin-right: 8px;
+      }
+      .form-group .error-message {
+        color: #e74c3c;
+        font-size: 12px;
+        margin-top: 5px;
+        display: none;
+      }
+      .form-group input.error,
+      .form-group select.error {
+        border-color: #e74c3c;
+      }
+      .search-box {
+        margin-bottom: 20px;
+      }
+      .search-box input {
+        padding: 12px 16px;
+        width: 100%;
+        max-width: 400px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+      .search-box input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+      .search-box input::placeholder {
+        color: #94a3b8;
+      }
+      
+      /* Icon Buttons */
+      .btn-icon {
+        padding: 6px 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        height: 32px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .btn-icon:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+      .btn-icon:active {
+        transform: translateY(0);
+      }
+      .btn-view {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+      }
+      .btn-view:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      }
+      .btn-edit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+      .btn-edit:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      }
+      .btn-delete {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+      }
+      .btn-delete:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      }
+      
+      /* Responsive Design */
+      @media (max-width: 768px) {
         .sidebar {
-            width: 250px;
-            height: 100vh;
-            background: #2c3e50;
-            color: white;
-            position: fixed;
-            padding-top: 20px;
-            overflow-y: auto;
+          transform: translateX(-100%);
+          width: 260px;
         }
-        .sidebar h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 18px;
-        }
-        .sidebar a {
-            display: block;
-            padding: 15px 20px;
-            color: white;
-            text-decoration: none;
-            border-bottom: 1px solid #1a252f;
-            cursor: pointer;
-        }
-        .sidebar a:hover {
-            background: #34495e;
+        .sidebar.active {
+          transform: translateX(0);
         }
         .content {
-            margin-left: 260px;
-            padding: 20px;
+          margin-left: 0;
+          padding: 20px 15px;
         }
-        .section {
-            display: none;
-        }
-        .active {
-            display: block;
+        h2 {
+          font-size: 24px;
         }
         table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            margin-top: 20px;
+          font-size: 14px;
         }
         th, td {
-            padding: 12px;
-            border: 1px solid #ccc;
-            text-align: left;
-        }
-        th {
-            background: #3498db;
-            color: white;
+          padding: 10px 8px;
         }
         .btn {
-            padding: 8px 16px;
-            border: none;
-            background: #3498db;
-            color: white;
-            cursor: pointer;
-            border-radius: 4px;
-            margin: 2px;
-        }
-        .btn:hover {
-            background: #2980b9;
-        }
-        .btn-danger {
-            background: #e74c3c;
-        }
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-        .btn-success {
-            background: #27ae60;
-        }
-        .btn-success:hover {
-            background: #229954;
-        }
-        
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            overflow-y: auto;
+          padding: 10px 16px;
+          font-size: 13px;
         }
         .modal-content {
-            background-color: #fefefe;
-            margin: 50px auto;
-            padding: 30px;
-            border: 1px solid #888;
-            width: 90%;
-            max-width: 700px;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            position: relative;
-            top: 50%;
-            transform: translateY(-50%);
-            max-height: 90vh;
-            overflow-y: auto;
+          width: 95%;
+          padding: 25px;
+          margin: 20px auto;
         }
-        @media (max-height: 700px) {
-            .modal-content {
-                top: 0;
-                transform: none;
-                margin: 20px auto;
-            }
+      }
+      
+      @media (max-width: 480px) {
+        .content {
+          padding: 15px 10px;
         }
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
+        h2 {
+          font-size: 20px;
         }
-        .close:hover {
-            color: black;
+        table {
+          font-size: 12px;
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #3498db;
-            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
-        }
-        .form-group input[type="checkbox"] {
-            width: auto;
-            margin-right: 8px;
-        }
-        .form-group .error-message {
-            color: #e74c3c;
-            font-size: 12px;
-            margin-top: 5px;
-            display: none;
-        }
-        .form-group input.error,
-        .form-group select.error {
-            border-color: #e74c3c;
-        }
-        .search-box {
-            margin-bottom: 15px;
+        th, td {
+          padding: 8px 6px;
         }
         .search-box input {
-            padding: 8px;
-            width: 300px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+          max-width: 100%;
         }
+      }
     </style>
-</head>
-<body>
-
-<div class="sidebar">
-    <h2>QUẢN LÝ CHUNG CƯ</h2>
-    <a onclick="show('households')">🏠 Xem tất cả hộ dân</a>
-    <a onclick="show('fee-categories')">💰 Quản lý loại phí</a>
-    <a onclick="show('cost-stats')">📊 Thống kê chi phí</a>
-    <a onclick="show('billing')">🧾 Quản lý hóa đơn tháng</a>
-    <a onclick="show('accounts')">👥 Quản lý tài khoản cư dân</a>
-    <a onclick="show('reports')">📑 Xem báo cáo</a>
-    <a href="/login-admin.html" style="color: #e74c3c; margin-top: 20px;">🚪 Đăng xuất</a>
-</div>
-
-<div class="content">
-
-    <!-- Hộ dân -->
-    <div id="households" class="section active">
-        <h2>Danh sách hộ dân</h2>
-        <button class="btn btn-success" onclick="openHouseholdForm()">+ Thêm hộ dân</button>
-        <div class="search-box">
-            <input type="text" id="searchHousehold" placeholder="Tìm kiếm theo tên, căn hộ, số điện thoại..." onkeyup="filterHouseholds()">
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Mã hộ</th>
-                    <th>Chủ hộ</th>
-                    <th>Căn hộ</th>
-                    <th>Số điện thoại</th>
-                    <th>Số thành viên</th>
-                    <th>Trạng thái</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody id="householdsTableBody">
-                <tr><td colspan="8" style="text-align:center">Đang tải...</td></tr>
-            </tbody>
-        </table>
+  </head>
+  <body>
+    <div class="sidebar">
+      <h2>QUẢN LÝ CHUNG CƯ</h2>
+      <a onclick="show('households')">🏠 Xem tất cả hộ dân</a>
+      <a onclick="show('fee-categories')">💰 Quản lý loại phí</a>
+      <a onclick="show('cost-stats')">📊 Thống kê chi phí</a>
+      <a onclick="show('billing')">🧾 Quản lý hóa đơn tháng</a>
+      <a onclick="show('accounts')">👥 Quản lý tài khoản cư dân</a>
+      <a onclick="show('reports')">📑 Xem báo cáo</a>
+      <a onclick="show('my-account')">👤 Thông tin cá nhân</a>
+      <a href="/login-admin.html" style="color: #e74c3c; margin-top: 20px"
+        >🚪 Đăng xuất</a
+      >
     </div>
 
-    <!-- Loại phí -->
-    <div id="fee-categories" class="section">
-        <h2>Quản lý loại phí</h2>
-        <button class="btn btn-success" onclick="openFeeCategoryForm()">+ Thêm loại phí mới</button>
+    <div class="content">
+      <!-- Hộ dân -->
+      <div id="households" class="section active">
+        <h2>🏠 Danh sách hộ dân</h2>
+        <button class="btn btn-success" onclick="openHouseholdForm()">
+          + Thêm hộ dân
+        </button>
         <div class="search-box">
-            <input type="text" id="searchFeeCategory" placeholder="Tìm kiếm theo mã, tên loại phí..." onkeyup="filterFeeCategories()">
+          <input
+            type="text"
+            id="searchHousehold"
+            placeholder="Tìm kiếm theo tên, căn hộ, số điện thoại..."
+            onkeyup="filterHouseholds()"
+          />
         </div>
         <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Mã loại phí</th>
-                    <th>Tên loại phí</th>
-                    <th>Mô tả</th>
-                    <th>Đơn vị</th>
-                    <th>Số tiền mặc định</th>
-                    <th>Cố định hàng tháng</th>
-                    <th>Trạng thái</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody id="feeCategoriesTableBody">
-                <tr><td colspan="9" style="text-align:center">Đang tải...</td></tr>
-            </tbody>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Mã hộ</th>
+              <th>Chủ hộ</th>
+              <th>Căn hộ</th>
+              <th>Số điện thoại</th>
+              <th>Số thành viên</th>
+              <th>Trạng thái</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="householdsTableBody">
+            <tr>
+              <td colspan="8" style="text-align: center">Đang tải...</td>
+            </tr>
+          </tbody>
         </table>
-    </div>
+      </div>
 
-    <!-- Thống kê -->
-    <div id="cost-stats" class="section">
-        <h2>Thống kê chi phí toàn bộ tòa nhà</h2>
-        <div style="margin-bottom: 20px;">
-            <label>Chọn kỳ thu phí: </label>
-            <select id="statsPeriodSelect" onchange="loadStatistics()" style="padding: 8px; margin-left: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                <option value="">-- Chọn kỳ thu phí --</option>
-            </select>
-            <button class="btn" onclick="loadStatistics()" style="margin-left: 10px;">Tải lại</button>
+      <!-- Loại phí -->
+      <div id="fee-categories" class="section">
+        <h2>💰 Quản lý loại phí</h2>
+        <button class="btn btn-success" onclick="openFeeCategoryForm()">
+          + Thêm loại phí mới
+        </button>
+        <div class="search-box">
+          <input
+            type="text"
+            id="searchFeeCategory"
+            placeholder="Tìm kiếm theo mã, tên loại phí..."
+            onkeyup="filterFeeCategories()"
+          />
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Mã loại phí</th>
+              <th>Tên loại phí</th>
+              <th>Mô tả</th>
+              <th>Đơn vị</th>
+              <th>Số tiền mặc định</th>
+              <th>Cố định hàng tháng</th>
+              <th>Trạng thái</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="feeCategoriesTableBody">
+            <tr>
+              <td colspan="9" style="text-align: center">Đang tải...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Thống kê -->
+      <div id="cost-stats" class="section">
+        <h2>📊 Thống kê chi phí toàn bộ tòa nhà</h2>
+        <div style="margin-bottom: 20px">
+          <label>Chọn kỳ thu phí: </label>
+          <select
+            id="statsPeriodSelect"
+            onchange="onPeriodSelectChange()"
+            style="
+              padding: 8px;
+              margin-left: 10px;
+              border: 1px solid #ddd;
+              border-radius: 4px;
+            "
+          >
+            <option value="">-- Chọn kỳ thu phí --</option>
+          </select>
+          <button
+            class="btn"
+            onclick="refreshStatistics()"
+            style="margin-left: 10px"
+          >
+            🔄 Tải lại
+          </button>
         </div>
         <div id="costStatsContent">
-            <p>Vui lòng chọn kỳ thu phí để xem thống kê</p>
+          <p>Vui lòng chọn kỳ thu phí để xem thống kê</p>
         </div>
-    </div>
+      </div>
 
-    <!-- Hóa đơn -->
-    <div id="billing" class="section">
-        <h2>Quản lý hóa đơn tháng</h2>
-        <button class="btn btn-success" onclick="openBillingPeriodForm()">+ Tạo kỳ thu phí mới</button>
+      <!-- Hóa đơn -->
+      <div id="billing" class="section">
+        <h2>🧾 Quản lý hóa đơn tháng</h2>
+        <button class="btn btn-success" onclick="openBillingPeriodForm()">
+          + Tạo kỳ thu phí mới
+        </button>
         <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Kỳ thu phí</th>
-                    <th>Ngày bắt đầu</th>
-                    <th>Ngày kết thúc</th>
-                    <th>Trạng thái</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody id="billingPeriodsTableBody">
-                <tr><td colspan="6" style="text-align:center">Đang tải...</td></tr>
-            </tbody>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Kỳ thu phí</th>
+              <th>Ngày bắt đầu</th>
+              <th>Ngày kết thúc</th>
+              <th>Trạng thái</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="billingPeriodsTableBody">
+            <tr>
+              <td colspan="6" style="text-align: center">Đang tải...</td>
+            </tr>
+          </tbody>
         </table>
-    </div>
+      </div>
 
-    <!-- Tài khoản -->
-    <div id="accounts" class="section">
-        <h2>Quản lý tài khoản cư dân</h2>
-        <button class="btn btn-success" onclick="openAccountForm()">+ Tạo tài khoản mới</button>
-        <div style="margin: 15px 0; display: flex; gap: 10px; flex-wrap: wrap;">
-            <div class="search-box" style="flex: 1; min-width: 200px;">
-                <input type="text" id="searchAccount" placeholder="Tìm kiếm theo username, tên cư dân..." onkeyup="filterAccounts()">
-            </div>
-            <div style="display: flex; align-items: center; gap: 5px;">
-                <label>Lọc theo vai trò:</label>
-                <select id="filterAccountRole" onchange="filterAccounts()" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    <option value="">Tất cả</option>
-                    <option value="1">RESIDENT</option>
-                    <option value="2">ADMIN</option>
-                </select>
-            </div>
+      <!-- Tài khoản -->
+      <div id="accounts" class="section">
+        <h2>👥 Quản lý tài khoản cư dân</h2>
+        <button class="btn btn-success" onclick="openAccountForm()">
+          + Tạo tài khoản mới
+        </button>
+        <div style="margin: 15px 0; display: flex; gap: 10px; flex-wrap: wrap">
+          <div class="search-box" style="flex: 1; min-width: 200px">
+            <input
+              type="text"
+              id="searchAccount"
+              placeholder="Tìm kiếm theo username, tên cư dân..."
+              onkeyup="filterAccounts()"
+            />
+          </div>
+          <div style="display: flex; align-items: center; gap: 5px">
+            <label>Lọc theo vai trò:</label>
+            <select
+              id="filterAccountRole"
+              onchange="filterAccounts()"
+              style="padding: 8px; border: 1px solid #ddd; border-radius: 4px"
+            >
+              <option value="">Tất cả</option>
+              <option value="1">RESIDENT</option>
+              <option value="2">ADMIN</option>
+            </select>
+          </div>
         </div>
         <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Username</th>
-                    <th>Vai trò</th>
-                    <th>Cư dân</th>
-                    <th>Ngày tạo</th>
-                    <th>Hành động</th>
-                </tr>
-            </thead>
-            <tbody id="accountsTableBody">
-                <tr><td colspan="6" style="text-align:center">Đang tải...</td></tr>
-            </tbody>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Vai trò</th>
+              <th>Cư dân</th>
+              <th>Ngày tạo</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="accountsTableBody">
+            <tr>
+              <td colspan="6" style="text-align: center">Đang tải...</td>
+            </tr>
+          </tbody>
         </table>
-    </div>
+      </div>
 
-    <!-- Báo cáo -->
-    <div id="reports" class="section">
-        <h2>Xem báo cáo</h2>
+      <!-- Báo cáo -->
+      <div id="reports" class="section">
+        <h2>📑 Xem báo cáo</h2>
         <div id="reportsContent">
-            <p>Đang tải...</p>
+          <p>Đang tải...</p>
         </div>
+      </div>
+
+      <!-- Thông tin tài khoản -->
+      <div id="my-account" class="section">
+        <h2>👤 Thông tin tài khoản của bạn</h2>
+
+        <div
+          style="
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+          "
+        >
+          <div class="form-group">
+            <label>Tên đăng nhập (Username):</label>
+            <input
+              type="text"
+              id="myUsername"
+              value=""
+              readonly
+              style="background-color: #f9f9f9; cursor: not-allowed"
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Vai trò (Role):</label>
+            <input
+              type="text"
+              id="myRole"
+              value=""
+              readonly
+              style="background-color: #f9f9f9; cursor: not-allowed"
+            />
+          </div>
+
+          <div
+            class="form-group"
+            id="myResidentInfoGroup"
+            style="display: none"
+          >
+            <label>Thông tin cư dân liên kết:</label>
+            <input
+              type="text"
+              id="myResidentName"
+              value=""
+              readonly
+              style="background-color: #f9f9f9"
+            />
+          </div>
+
+          <div
+            style="
+              margin-top: 30px;
+              border-top: 1px solid #eee;
+              padding-top: 20px;
+            "
+          >
+            <button class="btn btn-success" onclick="openChangePasswordModal()">
+              🔑 Đổi mật khẩu
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-</div>
-
-<!-- Modal: Household Form -->
-<div id="householdModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('householdModal')">&times;</span>
+    <!-- Modal: Household Form -->
+    <div id="householdModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('householdModal')"
+          >&times;</span
+        >
         <h2 id="householdFormTitle">Thêm hộ dân mới</h2>
         <form id="householdForm" onsubmit="saveHousehold(event)">
-            <div class="form-group">
-                <label>Mã hộ *</label>
-                <input type="text" id="householdCode" required maxlength="50">
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Tên chủ hộ *</label>
-                <input type="text" id="ownerName" required maxlength="100">
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Số căn hộ *</label>
-                <input type="text" id="apartmentNumber" required maxlength="20">
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Số điện thoại</label>
-                <input type="text" id="phone" maxlength="20" placeholder="10-11 chữ số">
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Số thành viên</label>
-                <input type="number" id="membersCount" min="1">
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Tình trạng cư trú</label>
-                <select id="residenceStatus">
-                    <option value="">-- Chọn --</option>
-                    <option value="DANG_O">Đang ở</option>
-                    <option value="DA_CHUYEN">Đã chuyển</option>
-                    <option value="TAM_VANG">Tạm vắng</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Ngày vào ở</label>
-                <input type="date" id="moveInDate">
-            </div>
-            <div class="form-group">
-                <label>Ngày chuyển đi</label>
-                <input type="date" id="moveOutDate">
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="householdOwnsApartment"> Đã mua căn hộ (không cần đóng phí thuê)
-                </label>
-            </div>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="householdActive" checked> Hoạt động
-                </label>
-            </div>
-            <button type="submit" class="btn btn-success">Lưu</button>
-            <button type="button" class="btn" onclick="closeModal('householdModal')">Hủy</button>
-        </form>
-    </div>
-</div>
+          <div class="form-group">
+            <label>Mã hộ *</label>
+            <input type="text" id="householdCode" required maxlength="50" />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Tên chủ hộ *</label>
+            <input type="text" id="ownerName" required maxlength="100" />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Số căn hộ *</label>
+            <input type="text" id="apartmentNumber" required maxlength="20" />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Số điện thoại</label>
+            <input
+              type="text"
+              id="phone"
+              maxlength="20"
+              placeholder="10-11 chữ số"
+            />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Số thành viên</label>
+            <input type="number" id="membersCount" min="1" />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Tình trạng cư trú</label>
+            <select id="residenceStatus">
+              <option value="">-- Chọn --</option>
+              <option value="DANG_O">Đang ở</option>
+              <option value="DA_CHUYEN">Đã chuyển</option>
+              <option value="TAM_VANG">Tạm vắng</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Ngày vào ở</label>
+            <input type="date" id="moveInDate" />
+          </div>
+          <div class="form-group">
+            <label>Ngày chuyển đi</label>
+            <input type="date" id="moveOutDate" />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="householdOwnsApartment" /> Đã mua căn
+              hộ (không cần đóng phí thuê)
+            </label>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="householdActive" checked /> Hoạt động
+            </label>
+          </div>
 
-<!-- Modal: Billing Period Form -->
-<div id="billingPeriodModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('billingPeriodModal')">&times;</span>
+          <!-- Quản lý cư dân (chỉ hiển thị khi sửa) -->
+          <div id="residentsSection" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
+            <h3 style="color: #1e293b; margin-bottom: 15px; font-size: 18px;">👥 Quản lý cư dân trong hộ</h3>
+            <button type="button" class="btn btn-success" onclick="addResidentRow()" style="margin-bottom: 15px;">
+              + Thêm cư dân
+            </button>
+            <div id="residentsList" style="max-height: 400px; overflow-y: auto;">
+              <!-- Danh sách cư dân sẽ được thêm vào đây -->
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-success">Lưu</button>
+          <button
+            type="button"
+            class="btn"
+            onclick="closeModal('householdModal')"
+          >
+            Hủy
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Billing Period Form -->
+    <div id="billingPeriodModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('billingPeriodModal')"
+          >&times;</span
+        >
         <h2 id="billingPeriodFormTitle">Tạo kỳ thu phí mới</h2>
         <form id="billingPeriodForm" onsubmit="saveBillingPeriod(event)">
-            <div class="form-group">
-                <label>Năm *</label>
-                <input type="number" id="periodYear" min="2000" max="2100" required>
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Tháng *</label>
-                <input type="number" id="periodMonth" min="1" max="12" required>
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Ngày bắt đầu *</label>
-                <input type="date" id="periodStartDate" required>
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Ngày kết thúc *</label>
-                <input type="date" id="periodEndDate" required>
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="periodClosed"> Đã đóng kỳ
-                </label>
-            </div>
-            <button type="submit" class="btn btn-success">Lưu</button>
-            <button type="button" class="btn" onclick="closeModal('billingPeriodModal')">Hủy</button>
+          <div class="form-group">
+            <label>Năm *</label>
+            <input
+              type="number"
+              id="periodYear"
+              min="2000"
+              max="2100"
+              required
+            />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Tháng *</label>
+            <input type="number" id="periodMonth" min="1" max="12" required />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Ngày bắt đầu *</label>
+            <input type="date" id="periodStartDate" required />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Ngày kết thúc *</label>
+            <input type="date" id="periodEndDate" required />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="periodClosed" /> Đã đóng kỳ
+            </label>
+          </div>
+          <button type="submit" class="btn btn-success">Lưu</button>
+          <button
+            type="button"
+            class="btn"
+            onclick="closeModal('billingPeriodModal')"
+          >
+            Hủy
+          </button>
         </form>
+      </div>
     </div>
-</div>
 
-<!-- Modal: Period Details -->
-<div id="periodDetailsModal" class="modal">
-    <div class="modal-content" style="max-width: 1200px;">
-        <span class="close" onclick="closeModal('periodDetailsModal')">&times;</span>
+    <!-- Modal: Period Details -->
+    <div id="periodDetailsModal" class="modal">
+      <div class="modal-content" style="max-width: 1200px">
+        <span class="close" onclick="closeModal('periodDetailsModal')"
+          >&times;</span
+        >
         <h2 id="periodDetailsTitle">Chi tiết kỳ thu phí</h2>
-        <div id="periodInfo" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
-            <strong>Kỳ thu phí:</strong> <span id="periodInfoText"></span>
+        <div
+          id="periodInfo"
+          style="
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+          "
+        >
+          <strong>Kỳ thu phí:</strong> <span id="periodInfoText"></span>
         </div>
         <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Mã hộ</th>
-                    <th>Chủ hộ</th>
-                    <th>Căn hộ</th>
-                    <th>Loại phí</th>
-                    <th>Số lượng</th>
-                    <th>Đơn giá</th>
-                    <th>Số tiền</th>
-                    <th>Trạng thái</th>
-                    <th>Hạn thanh toán</th>
-                </tr>
-            </thead>
-            <tbody id="periodDetailsTableBody">
-            </tbody>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Mã hộ</th>
+              <th>Chủ hộ</th>
+              <th>Căn hộ</th>
+              <th>Loại phí</th>
+              <th>Số lượng</th>
+              <th>Đơn giá</th>
+              <th>Số tiền</th>
+              <th>Trạng thái</th>
+              <th>Hạn thanh toán</th>
+            </tr>
+          </thead>
+          <tbody id="periodDetailsTableBody"></tbody>
         </table>
-        <div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-radius: 4px;">
-            <strong>Tổng số hộ:</strong> <span id="totalHouseholds">0</span> | 
-            <strong>Tổng số phí:</strong> <span id="totalFees">0</span> | 
-            <strong>Tổng tiền:</strong> <span id="totalAmount">0đ</span>
+        <div
+          style="
+            margin-top: 15px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 4px;
+          "
+        >
+          <strong>Tổng số hộ:</strong> <span id="totalHouseholds">0</span> |
+          <strong>Tổng số phí:</strong> <span id="totalFees">0</span> |
+          <strong>Tổng tiền:</strong> <span id="totalAmount">0đ</span>
         </div>
-        <button class="btn" onclick="closeModal('periodDetailsModal')" style="margin-top: 15px;">Đóng</button>
+        <button
+          class="btn"
+          onclick="closeModal('periodDetailsModal')"
+          style="margin-top: 15px"
+        >
+          Đóng
+        </button>
+      </div>
     </div>
-</div>
 
-<!-- Modal: Fee Category Form -->
-<div id="feeCategoryModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('feeCategoryModal')">&times;</span>
+    <!-- Modal: Fee Category Form -->
+    <div id="feeCategoryModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('feeCategoryModal')"
+          >&times;</span
+        >
         <h2 id="feeCategoryFormTitle">Thêm loại phí mới</h2>
         <form id="feeCategoryForm" onsubmit="saveFeeCategory(event)">
-            <div class="form-group">
-                <label>Mã loại phí *</label>
-                <input type="text" id="feeCategoryCode" required maxlength="50" placeholder="VD: DIEN, NUOC, PHI_QL">
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Tên loại phí *</label>
-                <input type="text" id="feeCategoryName" required maxlength="100" placeholder="VD: Điện, Nước, Phí quản lý">
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Mô tả</label>
-                <input type="text" id="feeCategoryDescription" maxlength="255" placeholder="Mô tả chi tiết về loại phí">
-            </div>
-            <div class="form-group">
-                <label>Đơn vị</label>
-                <input type="text" id="feeCategoryUnit" maxlength="50" placeholder="VD: kWh, m³, tháng">
-            </div>
-            <div class="form-group">
-                <label>Số tiền mặc định</label>
-                <input type="number" id="feeCategoryDefaultAmount" min="0" step="0.01" placeholder="0.00">
-            </div>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="feeCategoryFixedMonthly" checked> Cố định hàng tháng
-                </label>
-            </div>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="feeCategoryActive" checked> Hoạt động
-                </label>
-            </div>
-            <button type="submit" class="btn btn-success">Lưu</button>
-            <button type="button" class="btn" onclick="closeModal('feeCategoryModal')">Hủy</button>
+          <div class="form-group">
+            <label>Mã loại phí *</label>
+            <input
+              type="text"
+              id="feeCategoryCode"
+              required
+              maxlength="50"
+              placeholder="VD: DIEN, NUOC, PHI_QL"
+            />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Tên loại phí *</label>
+            <input
+              type="text"
+              id="feeCategoryName"
+              required
+              maxlength="100"
+              placeholder="VD: Điện, Nước, Phí quản lý"
+            />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Mô tả</label>
+            <input
+              type="text"
+              id="feeCategoryDescription"
+              maxlength="255"
+              placeholder="Mô tả chi tiết về loại phí"
+            />
+          </div>
+          <div class="form-group">
+            <label>Đơn vị</label>
+            <input
+              type="text"
+              id="feeCategoryUnit"
+              maxlength="50"
+              placeholder="VD: kWh, m³, tháng"
+            />
+          </div>
+          <div class="form-group">
+            <label>Số tiền mặc định</label>
+            <input
+              type="number"
+              id="feeCategoryDefaultAmount"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="feeCategoryFixedMonthly" checked /> Cố
+              định hàng tháng
+            </label>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="feeCategoryActive" checked /> Hoạt động
+            </label>
+          </div>
+          <button type="submit" class="btn btn-success">Lưu</button>
+          <button
+            type="button"
+            class="btn"
+            onclick="closeModal('feeCategoryModal')"
+          >
+            Hủy
+          </button>
         </form>
+      </div>
     </div>
-</div>
 
-<!-- Modal: Account Form -->
-<div id="accountModal" class="modal">
-    <div class="modal-content">
+    <!-- Modal: Account Form -->
+    <div id="accountModal" class="modal">
+      <div class="modal-content">
         <span class="close" onclick="closeModal('accountModal')">&times;</span>
         <h2 id="accountFormTitle">Tạo tài khoản mới</h2>
         <form id="accountForm" onsubmit="saveAccount(event)">
-            <div class="form-group">
-                <label>Username *</label>
-                <input type="text" id="accountUsername" required maxlength="50" placeholder="Nhập username">
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Password <span id="passwordRequired">*</span></label>
-                <input type="password" id="accountPassword" minlength="6" placeholder="Tối thiểu 6 ký tự">
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group">
-                <label>Vai trò *</label>
-                <select id="accountRoleId" required>
-                    <option value="">-- Chọn vai trò --</option>
-                    <option value="1">RESIDENT</option>
-                    <option value="2">ADMIN</option>
-                </select>
-                <div class="error-message"></div>
-            </div>
-            <div class="form-group" id="residentFieldGroup">
-                <label>Cư dân (dành cho RESIDENT)</label>
-                <select id="accountResidentId">
-                    <option value="">-- Chọn cư dân (tùy chọn) --</option>
-                </select>
-                <small style="color: #666; font-size: 12px;">Chỉ chọn nếu tài khoản RESIDENT dành cho cư dân cụ thể. Tài khoản ADMIN không cần chọn.</small>
-            </div>
-            <button type="submit" class="btn btn-success">Lưu</button>
-            <button type="button" class="btn" onclick="closeModal('accountModal')">Hủy</button>
+          <div class="form-group">
+            <label>Username *</label>
+            <input
+              type="text"
+              id="accountUsername"
+              required
+              maxlength="50"
+              placeholder="Nhập username"
+            />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Password <span id="passwordRequired">*</span></label>
+            <input
+              type="password"
+              id="accountPassword"
+              minlength="6"
+              placeholder="Tối thiểu 6 ký tự"
+            />
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group">
+            <label>Vai trò *</label>
+            <select id="accountRoleId" required>
+              <option value="">-- Chọn vai trò --</option>
+              <option value="1">RESIDENT</option>
+              <option value="2">ADMIN</option>
+            </select>
+            <div class="error-message"></div>
+          </div>
+          <div class="form-group" id="residentFieldGroup">
+            <label>Cư dân (dành cho RESIDENT)</label>
+            <select id="accountResidentId">
+              <option value="">-- Chọn cư dân (tùy chọn) --</option>
+            </select>
+            <small style="color: #666; font-size: 12px"
+              >Chỉ chọn nếu tài khoản RESIDENT dành cho cư dân cụ thể. Tài khoản
+              ADMIN không cần chọn.</small
+            >
+          </div>
+          <button type="submit" class="btn btn-success">Lưu</button>
+          <button
+            type="button"
+            class="btn"
+            onclick="closeModal('accountModal')"
+          >
+            Hủy
+          </button>
         </form>
+      </div>
     </div>
-</div>
 
-<!-- Modal: Account Details -->
-<div id="accountDetailsModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeModal('accountDetailsModal')">&times;</span>
+    <!-- Modal: Account Details -->
+    <div id="accountDetailsModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('accountDetailsModal')"
+          >&times;</span
+        >
         <h2>Chi tiết tài khoản</h2>
-        <table style="width: 100%; margin-top: 20px;">
-            <tr>
-                <th style="width: 150px; text-align: left;">ID</th>
-                <td id="accountDetailsId"></td>
-            </tr>
-            <tr>
-                <th>Username</th>
-                <td id="accountDetailsUsername"></td>
-            </tr>
-            <tr>
-                <th>Vai trò</th>
-                <td id="accountDetailsRole"></td>
-            </tr>
-            <tr>
-                <th>Cư dân</th>
-                <td id="accountDetailsResident"></td>
-            </tr>
-            <tr>
-                <th>Ngày tạo</th>
-                <td id="accountDetailsCreated"></td>
-            </tr>
-            <tr>
-                <th>Ngày cập nhật</th>
-                <td id="accountDetailsUpdated"></td>
-            </tr>
+        <table style="width: 100%; margin-top: 20px">
+          <tr>
+            <th style="width: 150px; text-align: left">ID</th>
+            <td id="accountDetailsId"></td>
+          </tr>
+          <tr>
+            <th>Username</th>
+            <td id="accountDetailsUsername"></td>
+          </tr>
+          <tr>
+            <th>Vai trò</th>
+            <td id="accountDetailsRole"></td>
+          </tr>
+          <tr>
+            <th>Cư dân</th>
+            <td id="accountDetailsResident"></td>
+          </tr>
+          <tr>
+            <th>Ngày tạo</th>
+            <td id="accountDetailsCreated"></td>
+          </tr>
+          <tr>
+            <th>Ngày cập nhật</th>
+            <td id="accountDetailsUpdated"></td>
+          </tr>
         </table>
-        <button class="btn" onclick="closeModal('accountDetailsModal')" style="margin-top: 15px;">Đóng</button>
+        <button
+          class="btn"
+          onclick="closeModal('accountDetailsModal')"
+          style="margin-top: 15px"
+        >
+          Đóng
+        </button>
+      </div>
     </div>
-</div>
 
-<script src="/money-utils.js"></script>
-<script src="/admin.js"></script>
+    <div id="changePasswordModal" class="modal">
+      <div class="modal-content" style="max-width: 500px">
+        <span class="close" onclick="closeModal('changePasswordModal')"
+          >&times;</span
+        >
+        <h2>Đổi mật khẩu</h2>
+        <form id="changePasswordForm" onsubmit="handleChangePassword(event)">
+          <div class="form-group">
+            <label>Mật khẩu cũ *</label>
+            <input type="password" id="oldPassword" required minlength="6" />
+          </div>
+          <div class="form-group">
+            <label>Mật khẩu mới *</label>
+            <input type="password" id="newPassword" required minlength="6" />
+          </div>
+          <div class="form-group">
+            <label>Nhập lại mật khẩu mới *</label>
+            <input
+              type="password"
+              id="confirmNewPassword"
+              required
+              minlength="6"
+            />
+            <div class="error-message" id="passwordMatchError">
+              Mật khẩu không khớp
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success">Cập nhật</button>
+          <button
+            type="button"
+            class="btn"
+            onclick="closeModal('changePasswordModal')"
+          >
+            Hủy
+          </button>
+        </form>
+      </div>
+    </div>
 
-</body>
+    <!-- Modal: Household Details -->
+    <div id="householdDetailsModal" class="modal">
+      <div class="modal-content" style="max-width: 900px;">
+        <span class="close" onclick="closeModal('householdDetailsModal')"
+          >&times;</span
+        >
+        <h2 id="householdDetailsTitle">Chi tiết hộ gia đình</h2>
+        <div id="householdDetailsContent">
+          <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px; margin-bottom: 10px;">⏳</div>
+            <p>Đang tải thông tin...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/money-utils.js"></script>
+    <script src="/admin.js"></script>
+  </body>
 </html>

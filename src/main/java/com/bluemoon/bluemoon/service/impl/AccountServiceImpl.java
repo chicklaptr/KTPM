@@ -1,5 +1,12 @@
 package com.bluemoon.bluemoon.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.bluemoon.bluemoon.entity.Account;
 import com.bluemoon.bluemoon.entity.Resident;
 import com.bluemoon.bluemoon.entity.Role;
@@ -11,12 +18,6 @@ import com.bluemoon.bluemoon.repository.ResidentRepository;
 import com.bluemoon.bluemoon.repository.RoleRepository;
 import com.bluemoon.bluemoon.service.AccountService;
 import com.bluemoon.bluemoon.util.PasswordEncoderUtil;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -180,6 +181,16 @@ public class AccountServiceImpl implements AccountService {
         account.setUpdatedAt(LocalDateTime.now());
         
         return accountRepository.save(account);
+    }
+
+    @Override
+    public void changePassword(Long id, String newRawPassword) {
+        Account account = getById(id);
+        // Mã hóa mật khẩu mới trước khi lưu
+        String encodedPassword = passwordEncoder.encode(newRawPassword);
+        account.setPassword(encodedPassword);
+        account.setUpdatedAt(LocalDateTime.now());
+        accountRepository.save(account);
     }
 }
 

@@ -5,10 +5,11 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "household")
-
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Household {
 
     @Id

@@ -3,34 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <title>User Dashboard - Cư dân</title>
-
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; font-family: Arial; background: #f2f4f7; }
+        * {
+            box-sizing: border-box;
+        }
+        body { 
+            margin: 0; 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
         .sidebar {
-            position: fixed; width: 250px; height: 100vh;
-            background: #1f2a44; color: white; padding-top: 20px;
+            position: fixed; width: 280px; height: 100vh;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            color: white; padding-top: 30px;
+            overflow-y: auto;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
         }
-        .sidebar h2 { text-align: center; margin-bottom: 30px; }
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        .sidebar h2 { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            font-size: 20px; 
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 0 20px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
         .sidebar a {
-            display: block; padding: 15px 20px; color: white;
-            text-decoration: none; border-bottom: 1px solid #162033;
-            cursor: pointer;
+            display: flex; align-items: center;
+            padding: 16px 24px; color: rgba(255, 255, 255, 0.9);
+            text-decoration: none; cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            font-weight: 500; font-size: 15px;
         }
-        .sidebar a:hover { background: #253456; }
-        .content { margin-left: 260px; padding: 20px; }
-        .section { display: none; }
+        .sidebar a:hover { 
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #667eea;
+            padding-left: 28px;
+            color: #fff;
+        }
+        .sidebar a.logout {
+            color: #f87171 !important; margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+        }
+        .sidebar a.logout:hover { 
+            background: rgba(239, 68, 68, 0.2);
+            border-left-color: #ef4444;
+        }
+        .content { margin-left: 280px; padding: 30px; min-height: 100vh; }
+        .section { 
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
         .active { display: block; }
-        .card {
-            background: white; padding: 20px; border-radius: 8px;
-            margin-bottom: 20px; box-shadow: 0 0 5px #ccc;
+        h2 {
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 28px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th, td { padding: 12px; border: 1px solid #ddd; }
-        th { background: #3498db; color: white; }
+        .card {
+            background: white; padding: 35px; border-radius: 16px;
+            margin-bottom: 25px; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .card h2 { margin-top: 0; color: #1e293b; }
+        .info-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px; margin-top: 15px;
+        }
+        .info-item {
+            padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        .info-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .info-item label {
+            display: block; color: #7f8c8d; font-size: 13px;
+            margin-bottom: 5px; font-weight: bold;
+        }
+        .info-item span {
+            color: #2c3e50; font-size: 16px;
+        }
+        table { 
+            width: 100%; border-collapse: collapse; background: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 12px; overflow: hidden;
+        }
+        th, td { padding: 16px; border: none; text-align: left; }
+        th { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        tbody tr:nth-child(even) { background: #f8fafc; }
+        tbody tr:hover { 
+            background: #f1f5f9;
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        tbody tr:last-child {
+            border-bottom: none;
+        }
         .btn {
-            padding: 8px 14px; border: none;
-            background: #3498db; color: white;
-            cursor: pointer; border-radius: 5px;
+            padding: 12px 24px; border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; cursor: pointer; border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600; font-size: 14px;
+            box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px -1px rgba(102, 126, 234, 0.4);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+        .btn-success { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+        }
+        .btn-success:hover { 
+            box-shadow: 0 6px 12px -1px rgba(16, 185, 129, 0.4);
+        }
+        .btn-danger { 
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+        }
+        .btn-danger:hover { 
+            box-shadow: 0 6px 12px -1px rgba(239, 68, 68, 0.4);
+        }
+        .btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        .status-paid { color: #27ae60; font-weight: bold; }
+        .status-pending { color: #f39c12; font-weight: bold; }
+        .status-overdue { color: #e74c3c; font-weight: bold; }
+        .status-partial { color: #3498db; font-weight: bold; }
+        .modal {
+            display: none; position: fixed; z-index: 2000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-content {
+            background-color: #ffffff; margin: 50px auto; padding: 40px;
+            border: none; width: 90%; max-width: 500px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .close {
+            color: #aaa; float: right; font-size: 28px;
+            font-weight: bold; cursor: pointer;
+        }
+        .close:hover { color: black; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block; margin-bottom: 5px; font-weight: bold;
+        }
+        .form-group input {
+            width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0;
+            border-radius: 8px; box-sizing: border-box;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #fff;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-1px);
+        }
+        .form-group input:hover {
+            border-color: #cbd5e1;
+        }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-box input {
+            padding: 12px 16px; width: 100%; max-width: 400px;
+            border: 2px solid #e2e8f0; border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .search-box input::placeholder {
+            color: #94a3b8;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 30px; border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.3);
+            animation: fadeIn 0.5s ease;
+        }
+        .summary-card h3 { margin-top: 0; }
+        .summary-stats {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px; margin-top: 15px;
+        }
+        .summary-item {
+            background: rgba(255,255,255,0.2); padding: 15px;
+            border-radius: 6px; text-align: center;
+        }
+        .summary-item .value {
+            font-size: 24px; font-weight: bold; margin-top: 5px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .content {
+                margin-left: 0;
+                padding: 20px 15px;
+            }
+            h2 {
+                font-size: 24px;
+            }
+            .card {
+                padding: 25px;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            table {
+                font-size: 14px;
+            }
+            th, td {
+                padding: 10px 8px;
+            }
+            .btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .content {
+                padding: 15px 10px;
+            }
+            h2 {
+                font-size: 20px;
+            }
+            .card {
+                padding: 20px;
+            }
+            table {
+                font-size: 12px;
+            }
+            th, td {
+                padding: 8px 6px;
+            }
+            .search-box input {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
@@ -38,12 +347,14 @@
 <body>
 
 <div class="sidebar">
-    <h2>CƯ DÂN</h2>
+    <h2>QUẢN LÝ CÁ NHÂN</h2>
     <a onclick="show('profile')">👤 Thông tin cá nhân</a>
     <a onclick="show('apartment')">🏠 Thông tin căn hộ</a>
     <a onclick="show('fees')">💰 Các khoản phí</a>
     <a onclick="show('history')">📜 Lịch sử thanh toán</a>
+    <a onclick="show('change-password')">🔑 Đổi mật khẩu</a>
     <a onclick="show('support')">📩 Hỗ trợ</a>
+    <a href="/login-user.html" class="logout" onclick="logout()">🚪 Đăng xuất</a>
 </div>
 
 <div class="content">
@@ -51,63 +362,186 @@
     <!-- PROFILE -->
     <div id="profile" class="section active">
         <div class="card">
-            <h2>Thông tin cá nhân</h2>
-            <p><b>Họ tên:</b> <span id="u-name"></span></p>
-            <p><b>SĐT:</b> <span id="u-phone"></span></p>
-            <p><b>Email:</b> <span id="u-email"></span></p>
+            <h2>👤 Thông tin cá nhân</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Họ và tên</label>
+                    <span id="u-name">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Số điện thoại</label>
+                    <span id="u-phone">-</span>
+                </div>
+                <div class="info-item">
+                    <label>CMND/CCCD</label>
+                    <span id="u-idNumber">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Ngày sinh</label>
+                    <span id="u-dateOfBirth">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Giới tính</label>
+                    <span id="u-gender">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Quan hệ với chủ hộ</label>
+                    <span id="u-relation">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Tình trạng cư trú</label>
+                    <span id="u-residenceStatus">-</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- APARTMENT -->
     <div id="apartment" class="section">
         <div class="card">
-            <h2>Thông tin căn hộ</h2>
-            <p><b>Mã căn hộ:</b> <span id="h-code"></span></p>
-            <p><b>Diện tích:</b> <span id="h-area"></span></p>
-            <p><b>Số người:</b> <span id="h-members"></span></p>
-            <p><b>Loại:</b> <span id="h-type"></span></p>
+            <h2>🏠 Thông tin căn hộ</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Mã hộ</label>
+                    <span id="h-code">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Chủ hộ</label>
+                    <span id="h-ownerName">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Số căn hộ</label>
+                    <span id="h-apartmentNumber">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Số điện thoại</label>
+                    <span id="h-phone">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Số thành viên</label>
+                    <span id="h-members">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Tình trạng cư trú</label>
+                    <span id="h-residenceStatus">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Ngày vào ở</label>
+                    <span id="h-moveInDate">-</span>
+                </div>
+                <div class="info-item">
+                    <label>Sở hữu căn hộ</label>
+                    <span id="h-ownsApartment">-</span>
+                </div>
+            </div>
+            
+            <!-- Danh sách thành viên gia đình -->
+            <div style="margin-top: 30px; padding-top: 25px; border-top: 2px solid #e2e8f0;">
+                <h3 style="color: #1e293b; margin-bottom: 20px; font-size: 20px;">👥 Thành viên gia đình</h3>
+                <div id="familyMembersList" style="min-height: 50px;">
+                    <p style="text-align: center; color: #64748b; padding: 20px;">Đang tải thông tin...</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- FEES -->
     <div id="fees" class="section">
-        <h2>Các khoản phí</h2>
-        <table>
-            <thead>
-            <tr>
-                <th>Tháng</th>
-                <th>Khoản phí</th>
-                <th>Số tiền</th>
-                <th>Trạng thái</th>
-                <th>Hành động</th>
-            </tr>
-            </thead>
-            <tbody id="feeTable"></tbody>
-        </table>
+        <h2>💰 Các khoản phí</h2>
+        <div id="feesSummary" class="summary-card" style="display: none;">
+            <h3>Tổng quan</h3>
+            <div class="summary-stats">
+                <div class="summary-item">
+                    <div>Tổng phải trả</div>
+                    <div class="value" id="totalDue">0đ</div>
+                </div>
+                <div class="summary-item">
+                    <div>Đã trả</div>
+                    <div class="value" id="totalPaid">0đ</div>
+                </div>
+                <div class="summary-item">
+                    <div>Còn lại</div>
+                    <div class="value" id="totalRemaining">0đ</div>
+                </div>
+            </div>
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchFees" placeholder="Tìm kiếm theo kỳ thu phí, loại phí..." onkeyup="filterFees()">
+        </div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                <tr>
+                    <th>Kỳ thu phí</th>
+                    <th>Loại phí</th>
+                    <th>Số lượng</th>
+                    <th>Đơn giá</th>
+                    <th>Phải trả</th>
+                    <th>Đã trả</th>
+                    <th>Còn lại</th>
+                    <th>Hạn thanh toán</th>
+                    <th>Trạng thái</th>
+                </tr>
+                </thead>
+                <tbody id="feeTable"></tbody>
+            </table>
+        </div>
     </div>
 
     <!-- HISTORY -->
     <div id="history" class="section">
-        <h2>Lịch sử thanh toán</h2>
-        <table>
-            <thead>
-            <tr>
-                <th>Ngày</th>
-                <th>Khoản phí</th>
-                <th>Số tiền</th>
-                <th>Phương thức</th>
-            </tr>
-            </thead>
-            <tbody id="historyTable"></tbody>
-        </table>
+        <h2>📜 Lịch sử thanh toán</h2>
+        <div class="search-box">
+            <input type="text" id="searchHistory" placeholder="Tìm kiếm theo loại phí, phương thức..." onkeyup="filterHistory()">
+        </div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                <tr>
+                    <th>Ngày thanh toán</th>
+                    <th>Kỳ thu phí</th>
+                    <th>Loại phí</th>
+                    <th>Số tiền</th>
+                    <th>Phương thức</th>
+                    <th>Ghi chú</th>
+                </tr>
+                </thead>
+                <tbody id="historyTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- CHANGE PASSWORD -->
+    <div id="change-password" class="section">
+        <div class="card">
+            <h2>🔑 Đổi mật khẩu</h2>
+            <form id="changePasswordForm" onsubmit="changePassword(event)">
+                <div class="form-group">
+                    <label>Mật khẩu hiện tại *</label>
+                    <input type="password" id="currentPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Mật khẩu mới *</label>
+                    <input type="password" id="newPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>Xác nhận mật khẩu mới *</label>
+                    <input type="password" id="confirmPassword" required minlength="6">
+                </div>
+                <button type="submit" class="btn btn-success">Đổi mật khẩu</button>
+            </form>
+        </div>
     </div>
 
     <!-- SUPPORT -->
     <div id="support" class="section">
         <div class="card">
-            <h2>Yêu cầu hỗ trợ</h2>
-            <textarea id="supportText" rows="5" style="width:100%"></textarea><br><br>
-            <button class="btn" onclick="sendSupport()">Gửi</button>
+            <h2>📩 Yêu cầu hỗ trợ</h2>
+            <p style="color: #7f8c8d; margin-bottom: 15px;">
+                Nếu bạn có thắc mắc hoặc cần hỗ trợ, vui lòng gửi yêu cầu tại đây.
+            </p>
+            <textarea id="supportText" rows="5" style="width:100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;" placeholder="Nhập nội dung yêu cầu hỗ trợ..."></textarea><br><br>
+            <button class="btn" onclick="sendSupport()">Gửi yêu cầu</button>
         </div>
     </div>
 

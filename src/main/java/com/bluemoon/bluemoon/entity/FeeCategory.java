@@ -3,13 +3,14 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 
 
 
 @Entity
 @Table(name = "fee_category")
-
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class FeeCategory {
 
     @Id

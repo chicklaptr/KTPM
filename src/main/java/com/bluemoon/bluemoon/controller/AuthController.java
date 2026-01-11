@@ -97,4 +97,70 @@ public class AuthController {
 	    return ResponseEntity.ok(response);
 	}
 
+	@PostMapping("/logout")
+	@ResponseBody
+	public ResponseEntity<Map<String, String>> logout(HttpSession session) {
+	    session.invalidate();
+	    Map<String, String> response = new HashMap<>();
+	    response.put("message", "Đăng xuất thành công");
+	    return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/resident/change-password")
+	@ResponseBody
+	public ResponseEntity<Map<String, Object>> changePasswordResident(
+			@RequestBody Map<String, String> request,
+			HttpSession session) {
+		Map<String, Object> response = new HashMap<>();
+		
+		Long residentId = (Long) session.getAttribute("residentId");
+		if (residentId == null) {
+			response.put("success", false);
+			response.put("message", "Chưa đăng nhập");
+			return ResponseEntity.status(401).body(response);
+		}
+		
+		String currentPassword = request.get("currentPassword");
+		String newPassword = request.get("newPassword");
+		
+		if (currentPassword == null || newPassword == null || 
+		    currentPassword.isEmpty() || newPassword.isEmpty()) {
+			response.put("success", false);
+			response.put("message", "Vui lòng nhập đầy đủ thông tin");
+			return ResponseEntity.badRequest().body(response);
+		}
+		
+		if (newPassword.length() < 6) {
+			response.put("success", false);
+			response.put("message", "Mật khẩu mới phải có ít nhất 6 ký tự");
+			return ResponseEntity.badRequest().body(response);
+		}
+		
+		// Tìm account của resident
+		Optional<Account> accountOpt = accountRepository.findByResidentId(residentId);
+		if (accountOpt.isEmpty()) {
+			response.put("success", false);
+			response.put("message", "Không tìm thấy tài khoản");
+			return ResponseEntity.badRequest().body(response);
+		}
+		
+		Account account = accountOpt.get();
+		
+		// Kiểm tra mật khẩu hiện tại
+		if (!passwordEncoder.matches(currentPassword, account.getPassword())) {
+			response.put("success", false);
+			response.put("message", "Mật khẩu hiện tại không đúng");
+			return ResponseEntity.badRequest().body(response);
+		}
+		
+		// Cập nhật mật khẩu mới
+		String encodedPassword = passwordEncoder.encode(newPassword);
+		account.setPassword(encodedPassword);
+		accountRepository.save(account);
+		
+		response.put("success", true);
+		response.put("message", "Đổi mật khẩu thành công");
+		return ResponseEntity.ok(response);
+	}
+
 }
