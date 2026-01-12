@@ -32,9 +32,7 @@ function checkAdminSession() {
 let editingHouseholdId = null;
 
 function loadHouseholds() {
-  fetch("/api/households", {
-    credentials: 'same-origin'
-  })
+  fetch("/api/households/active", { credentials: "same-origin" })
     .then((res) => res.json())
     .then((households) => {
       const tbody = document.getElementById("householdsTableBody");
@@ -242,10 +240,46 @@ function addResidentRow() {
 }
 
 function removeResidentRow(index) {
-  if (confirm("Bạn có chắc chắn muốn xóa cư dân này?")) {
+  if (!confirm("Bạn có chắc chắn muốn xóa cư dân này?")) return;
+
+  const resident = residentsData[index];
+  if (!resident) return;
+
+  // 1) Nếu là cư dân mới thêm (chưa có id) -> xóa local thôi
+  if (!resident.id) {
     residentsData.splice(index, 1);
     loadResidentsList();
+    return;
   }
+
+  // 2) Nếu cư dân đã tồn tại DB -> gọi API DELETE để soft delete
+  fetch(`/api/residents/${resident.id}`, {
+    method: "DELETE",
+    credentials: "same-origin"
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Xóa cư dân thất bại");
+
+      // 3) Xóa khỏi UI local cho đỡ chờ
+      residentsData.splice(index, 1);
+      loadResidentsList();
+
+      // 4) (khuyến nghị) Fetch lại từ server để chắc chắn đúng active=true
+      return fetch(`/api/residents/by-household/${editingHouseholdId}`, {
+        credentials: "same-origin"
+      });
+    })
+    .then((r) => (r && r.ok ? r.json() : []))
+    .then((data) => {
+      if (Array.isArray(data)) {
+        residentsData = data;
+        loadResidentsList();
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      alert(err.message);
+    });
 }
 
 // Lắng nghe thay đổi trong các field của cư dân
@@ -912,9 +946,9 @@ function displayStatisticsByPeriod(periodId) {
           return [];
         });
       }),
-    fetch('/api/households', {
-      credentials: 'same-origin'
-    })
+	  fetch('/api/households/active', {
+	    credentials: 'same-origin'
+	  })
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}: ${r.statusText}`);
         return r.json().then(data => {
@@ -1214,7 +1248,7 @@ function displayAllPeriodsStatistics() {
     fetch('/api/billing-periods', { credentials: 'same-origin' }).then(r => r.ok ? r.json().then(d => Array.isArray(d) ? d : []) : []),
     fetch('/api/household-fees', { credentials: 'same-origin' }).then(async r => r.ok ? r.json().then(d => Array.isArray(d) ? d : []).catch(() => []) : []),
     fetch('/api/payments', { credentials: 'same-origin' }).then(async r => r.ok ? r.json().then(d => Array.isArray(d) ? d : []).catch(() => []) : []),
-    fetch('/api/households', { credentials: 'same-origin' }).then(r => r.ok ? r.json().then(d => Array.isArray(d) ? d : []) : [])
+    fetch('/api/households/active', { credentials: 'same-origin' }).then(r => r.ok ? r.json().then(d => Array.isArray(d) ? d : []) : [])
   ])
   .then(([periods, fees, payments, households]) => {
     periods.sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
@@ -1538,9 +1572,9 @@ function exportReport(type) {
 
 // 1. Xuất Excel Hộ dân
 function exportHouseholdsToExcel() {
-  fetch("/api/households", {
-    credentials: 'same-origin'
-  })
+	fetch("/api/households/active", {
+	  credentials: 'same-origin'
+	})
     .then((res) => res.json())
     .then((data) => {
       const exportData = data.map((h) => ({

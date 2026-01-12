@@ -54,6 +54,16 @@ public class Resident {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
+    @Column(nullable = false)
+    private Boolean active = true;
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
 
 	public Long getId() {
 		return id;

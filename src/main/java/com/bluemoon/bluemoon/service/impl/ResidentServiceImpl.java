@@ -48,10 +48,10 @@ public class ResidentServiceImpl implements ResidentService {
 
     @Override
     public void delete(Long id) {
-    	if(!residentRepository.existsById(id)) {
-    		throw new ResourceNotFoundException("Resident not found with id " + id);
-    	}
-        residentRepository.deleteById(id);
+        Resident r = residentRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Resident not found"));
+        r.setActive(false);      
+        residentRepository.save(r);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class ResidentServiceImpl implements ResidentService {
     public List<Resident> getByHousehold(Long householdId) {
         Household household = householdRepository.findById(householdId)
                 .orElseThrow(() -> new ResourceNotFoundException("Household not found with id " + householdId));
-        return residentRepository.findByHousehold(household);
+        return residentRepository.findByHouseholdIdAndActiveTrue(householdId);
     }
 
     @Override

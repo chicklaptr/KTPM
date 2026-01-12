@@ -45,10 +45,11 @@ public class HouseholdServiceImpl implements HouseholdService {
 
     @Override
     public void delete(Long id) {
-    	if(!householdRepository.existsById(id)) {
-    		throw new ResourceNotFoundException("Household not found with id " + id);
-    	}
-        householdRepository.deleteById(id);
+        Household h = householdRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Household not found with id " + id));
+
+        h.setActive(false);              
+        householdRepository.save(h);     
     }
 
     @Override
